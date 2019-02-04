@@ -912,17 +912,18 @@ void retro_run(void)
       return;
    }
 
-   if ((CHANGEAV == 1) || (CHANGEAV_TIMING == 1))
-   {
-      if (CHANGEAV == 1)
-      {
-         update_geometry();
-         CHANGEAV = 0;
-      }
-      if (CHANGEAV_TIMING == 1)
+   if (CHANGEAV || CHANGEAV_TIMING)
+   {     
+      if (CHANGEAV_TIMING)
       {
          update_timing();
          CHANGEAV_TIMING = 0;
+         CHANGEAV = 0;
+      }
+      if (CHANGEAV)
+      {
+         update_geometry();
+         CHANGEAV = 0;
       }
       p6logd("w:%d h:%d a:%.3f\n", retrow, retroh, (float)(4.0/3.0));
       p6logd("fps:%.2f soundrate:%d\n", FRAMERATE, (int)SOUNDRATE);
