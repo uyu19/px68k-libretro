@@ -89,6 +89,11 @@ void FASTCALL Joystick_Write(BYTE num, BYTE data)
 	if ( (num==0)||(num==1) ) JoyPortData[num] = data;
 }
 
+// Menu navigation related vars
+#define RATE   3 // repeat rate
+#define DELAY 30 // delay before 1st repeat
+BYTE keyb_in, joy_in;
+
 void FASTCALL Joystick_Update(int is_menu, int key, int port)
 {
 	BYTE ret0 = 0xff, ret1 = 0xff;
@@ -150,6 +155,43 @@ void FASTCALL Joystick_Update(int is_menu, int key, int port)
 	if (!is_menu && !Keyboard_IsSwKeyboard()) {
 		JoyState0[port] = ret0;
 		JoyState1[port] = ret1;
+	}
+
+	/* for faster menu browsing by pressing and holding key or button */
+	if (is_menu) {
+		int i;
+		static int repeat_rate, repeat_delay;
+		static BYTE last_in;
+		BYTE inbuf;
+
+		for (i = 0; i < 4; i++)
+			speedup_joy[1 << i] = 0;
+
+		joy_in = (ret0 ^ 0xff);
+		inbuf = (joy_in & 0x0f) | (keyb_in & 0x0c);
+
+		if (last_in != inbuf) {
+			last_in = inbuf;
+			repeat_delay = DELAY;
+			repeat_rate = 0;
+			// directly append PGUP/PGDOWN state in buff
+			JoyDownState0 &= ~(keyb_in & 0x0c);
+		} else {
+			if (repeat_delay)
+				repeat_delay--;
+			if (repeat_delay == 0) {
+				if (repeat_rate)
+					repeat_rate--;
+				if (repeat_rate == 0) {
+					repeat_rate = RATE;
+					for (i = 0; i < 4; i++) {
+						BYTE tmp = (1 << i); // which direction? UP/DOWN/LEFT/RIGHT
+						if ((inbuf & tmp) == tmp)
+							speedup_joy[tmp] = 1;
+					}
+				}
+			}
+		}
 	}
 }
 

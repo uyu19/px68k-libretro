@@ -369,6 +369,27 @@ static void upper(char *s)
 	}
 }
 
+static void switch_mfl(int a, int b)
+{
+	// exchange 2 values in mfl list
+	char name_tmp[MAX_PATH];
+	char type_tmp;
+
+	strcpy(name_tmp, mfl.name[a]);
+	type_tmp = mfl.type[a];
+
+	strcpy(mfl.name[a], mfl.name[b]);
+	mfl.type[a] = mfl.type[b];
+
+	strcpy(mfl.name[b], name_tmp);
+	mfl.type[b] = type_tmp;
+}
+
+#ifdef __LIBRETRO__
+extern char slash;
+extern char base_dir[MAX_PATH];
+#endif
+
 static void menu_create_flist(int v)
 {
 	int drv;
@@ -376,7 +397,7 @@ static void menu_create_flist(int v)
 	char support[] = "D8888DHDMDUP2HDDIMXDFIMG";
 
 	drv = WinUI_get_drv_num(mkey_y);
-	p6logd("*** drv:%d ***** %s \n", drv, mfl.dir[drv]);
+
 	if (drv < 0) {
 		return;
 	}
@@ -408,6 +429,18 @@ static void menu_create_flist(int v)
 	dp = opendir(mfl.dir[drv]);
 
 	// xxx check if dp is null...
+	if (!dp) {
+		char tmp[PATH_MAX];
+		/* failed to open StartDir, use rom folder as default */
+		/* TODO: check for path more early */
+		p6logd("Error opening StartDir, using rom path instead...\n");
+		snprintf(tmp, sizeof(tmp), "%s%c", base_dir, slash);
+		strcpy(mfl.dir[drv], tmp);
+		/* re-open folder */
+		dp = opendir(mfl.dir[drv]);
+	}
+
+	p6logd("*** drv:%d ***** %s \n", drv, mfl.dir[drv]);
 
 	// xxx You can get only MFL_MAX files.
 	for (i = 0 ; i < MFL_MAX; i++) {
@@ -451,7 +484,9 @@ static void menu_create_flist(int v)
 		strcpy(mfl.name[i], n);
 		// set 1 if this is directory
 		mfl.type[i] = S_ISDIR(buf.st_mode)? 1 : 0;
+#ifdef DEBUG
 		p6logd("%s 0x%x\n", n, buf.st_mode);
+#endif
 	}
 
 	closedir(dp);
@@ -459,6 +494,18 @@ static void menu_create_flist(int v)
 	strcpy(mfl.name[i], "");
 	mfl.num = i;
 	mfl.ptr = 0;
+
+	// Sorting mfl!
+	// Folder first, than files
+	// buble sort glory
+	for (int a=0; a<i-1; a++) {
+		for (int b=a+1; b<i; b++) {
+			if (mfl.type[a]<mfl.type[b])
+				switch_mfl(a, b);
+			if ((mfl.type[a]==mfl.type[b]) && (strcasecmp(mfl.name[a], mfl.name[b])>0))
+				switch_mfl(a, b);
+		}
+	}
 }
 
 static void menu_frame_skip(int v)
@@ -518,9 +565,6 @@ static void menu_joykey(int v)
 	Config.JoyKey = v;
 }
 
-#ifdef __LIBRETRO__
-extern char slash;
-#endif
 // ex. ./hoge/.. -> ./
 // ( ./ ---down hoge dir--> ./hoge ---up hoge dir--> ./hoge/.. )
 static void shortcut_dir(int drv)
@@ -553,6 +597,8 @@ static void shortcut_dir(int drv)
 	}
 }
 
+int speedup_joy[0xff] = {0};
+
 int WinUI_Menu(int first)
 {
 	int i, n;
@@ -578,6 +624,14 @@ int WinUI_Menu(int first)
 	joy = get_joy_downstate();
 	reset_joy_downstate();
 
+	if (speedup_joy[JOY_RIGHT])
+		joy &= ~JOY_RIGHT;
+	if (speedup_joy[JOY_LEFT])
+		joy &= ~JOY_LEFT;
+	if (speedup_joy[JOY_UP])
+		joy &= ~JOY_UP;
+	if (speedup_joy[JOY_DOWN])
+		joy &= ~JOY_DOWN;
 
 	if (!(joy & JOY_UP)) {
 		switch (menu_state) {
@@ -648,6 +702,82 @@ int WinUI_Menu(int first)
 #endif
 			}
 			mfile_redraw = 1;
+			break;
+		}
+	}
+
+	if (!(joy & JOY_LEFT)) {
+		switch (menu_state) {
+		case ms_key:
+			break;
+		case ms_value:
+			if (mval_y[mkey_y] > 0) {
+				mval_y[mkey_y]-=10;
+				if (mval_y[mkey_y]<0)
+					mval_y[mkey_y] = 0;
+
+				// do something immediately
+				if (menu_func[mkey_y].imm) {
+					menu_func[mkey_y].func(mval_y[mkey_y]);
+				}
+
+				menu_redraw = 1;
+			}
+			break;
+		case ms_file:
+			if (mfl.y == 0) {
+				if (mfl.ptr > 0) {
+					mfl.ptr-=10;
+					if (mfl.ptr < 0 )
+						mfl.ptr = 0;
+				}
+			} else {
+				mfl.y-=10;
+				if (mfl.y<0) {
+					if (mfl.ptr > 0)
+						mfl.ptr += mfl.y;
+					if (mfl.ptr < 0)
+						mfl.ptr = 0;
+					mfl.y = 0;
+				}
+			}
+			mfile_redraw = 1;
+			break;
+		}
+	}
+
+	if (!(joy & JOY_RIGHT)) {
+		switch (menu_state) {
+		case ms_key:
+			break;
+		case ms_value:
+			for (int ii = 0; ii<10; ii++) {
+				if (menu_items[mkey_y][mval_y[mkey_y] + 1][0] != '\0') {
+					mval_y[mkey_y]++;
+
+					if (menu_func[mkey_y].imm) {
+						menu_func[mkey_y].func(mval_y[mkey_y]);
+					}
+
+					menu_redraw = 1;
+				}
+			}
+			break;
+		case ms_file:
+			for (int ii=0; ii<10; ii++) {
+				if (mfl.y == 13) {
+					if (mfl.ptr + 14 < mfl.num
+					    && mfl.ptr < MFL_MAX - 13) {
+						mfl.ptr++;
+					}
+				} else if (mfl.y + 1 < mfl.num) {
+					mfl.y++;
+#ifdef DEBUG
+					printf("mfl.y %d\n", mfl.y);
+#endif
+				}
+				mfile_redraw = 1;
+			}
 			break;
 		}
 	}
