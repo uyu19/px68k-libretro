@@ -494,6 +494,9 @@ void retro_set_controller_descriptors()
 
 void retro_set_controller_port_device(unsigned port, unsigned device)
 {
+   if (port >= 2)
+      return;
+
    switch (device)
    {
       case RETRO_DEVICE_JOYPAD:
