@@ -1138,7 +1138,21 @@ int WinDraw_MenuInit(void)
 }
 
 #include "menu_str_sjis.txt"
-
+const char menu_item_desc[][60] = {
+    "Reset / NMI reset / Quit",
+    "Select [Virtual Pad / Virtual Mouse]",
+    "Change / Eject floppy 0",
+    "Change / Eject floppy 1",
+    "Change / Eject HDD 0",
+    "Change / Eject HDD 1",
+    "Set frame skip",
+    "Set Sound frequency",
+    "Adjust the size of virtual pad and button",
+    "Change the position of the virtual button",
+    "Configure the pad",
+    "Set No Wait Mode",
+    "Set up JoyKey"
+};
 
 void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
 {
@@ -1161,7 +1175,7 @@ void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
 		draw_str(twaku3_str);
 
 		set_mcolor(0xffff);
-		set_mlocateC(1, 1);
+		set_mlocateC(2, 1);
 		sprintf(tmp, "%s%s", title_str, PX68KVERSTR);
 		draw_str(tmp);
 	} else {
@@ -1179,10 +1193,10 @@ void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
 	// 真ん中
 	if (scr_type == x68k) {
 		set_mcolor(0xffff);
-		set_mlocate(3 * p6m.mfs / 2, 3.5 * p6m.mfs);
-		draw_str(waku_val_str[0]);
-		set_mlocate(17 * p6m.mfs / 2, 3.5 * p6m.mfs);
-		draw_str(waku_val_str[1]);
+		//set_mlocate(3 * p6m.mfs / 2, 3.5 * p6m.mfs);
+		//draw_str(waku_val_str[0]);
+		//set_mlocate(17 * p6m.mfs / 2, 3.5 * p6m.mfs);
+		//draw_str(waku_val_str[1]);
 
 		// 真ん中枠
 		set_mcolor(0xffe0); // yellow
@@ -1260,9 +1274,9 @@ void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
 		draw_str(swaku_str);
 		set_mlocateC(0, 14);
 		draw_str(swaku2_str);
+		//set_mlocateC(0, 15);
+		//draw_str(swaku2_str);
 		set_mlocateC(0, 15);
-		draw_str(swaku2_str);
-		set_mlocateC(0, 16);
 		draw_str(swaku3_str);
 	}
 
@@ -1270,11 +1284,11 @@ void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
 	set_mcolor(0xffff);
 	set_mbcolor(0x0);
 	set_mlocateC(2, 14);
-	draw_str(item_cap[mkey_y]);
-	if (menu_state == ms_value) {
-		set_mlocateC(2, 15);
-		draw_str(item_cap2[mkey_y]);
-	}
+	draw_str(menu_item_desc[mkey_y]);
+	//if (menu_state == ms_value) {
+		//set_mlocateC(2, 15);
+		//draw_str(item_cap2[mkey_y]);
+	//}
 
 	videoBuffer=(unsigned short int *)menu_buffer;
 
