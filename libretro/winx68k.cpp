@@ -928,14 +928,20 @@ extern "C" void exec_app_retro(){
 
    		if (input_state_cb(0, RETRO_DEVICE_JOYPAD,0, RETRO_DEVICE_ID_JOYPAD_L2))	//Joypad Key for Menu
 				Core_Key_Sate[RETROK_F12] = 0x80;
-			
+
 		if(memcmp( Core_Key_Sate,Core_old_Key_Sate , sizeof(Core_Key_Sate) ) )
 			handle_retrok();
 
    		memcpy(Core_old_Key_Sate,Core_Key_Sate , sizeof(Core_Key_Sate) );
 
 		if (menu_mode != menu_out) {
-			int ret; 
+			int ret;
+
+			keyb_in = 0;
+			if (Core_Key_Sate[RETROK_PAGEDOWN])
+				keyb_in |= JOY_RIGHT;
+			if (Core_Key_Sate[RETROK_PAGEUP])
+				keyb_in |= JOY_LEFT;
 
 			Joystick_Update(TRUE, menu_key_down, 0);
 

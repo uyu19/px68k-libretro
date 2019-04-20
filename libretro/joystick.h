@@ -37,8 +37,8 @@ void reset_joy_downstate(void);
 BYTE get_joy_upstate(void);
 void reset_joy_upstate(void);
 
-
 extern BYTE JoyKeyState;
+extern BYTE keyb_in, joy_in;
 
 extern int  *r_joy;
 

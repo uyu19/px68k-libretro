@@ -13,6 +13,9 @@
 #include "x68k/adpcm.h"
 #include "x68k/fdd.h"
 #include "x68k/x68kmemory.h"
+#ifndef NO_MERCURY
+#include "x68k/mercury.h"
+#endif
 
 #ifdef _WIN32
 char slash = '\\';
@@ -35,6 +38,7 @@ const char *retro_save_directory;
 const char *retro_system_directory;
 const char *retro_content_directory;
 char retro_system_conf[512];
+char base_dir[MAX_PATH];
 
 char Core_Key_Sate[512];
 char Core_old_Key_Sate[512];
@@ -52,7 +56,6 @@ float FRAMERATE = MODE_HIGH;
 int JOY_TYPE[2] = {0}; /* Set controller type for each player to use */
 int clockmhz = 10;
 DWORD ram_size;
-int pcm_vol, opm_vol;
 
 int pauseg = 0;
 
@@ -64,8 +67,6 @@ static retro_video_refresh_t video_cb;
 static retro_environment_t environ_cb;
 
 static  retro_input_poll_t input_poll_cb;
-
-static char base_dir[MAX_PATH];
 
 static void update_variables(void);
 
@@ -493,6 +494,9 @@ void retro_set_controller_descriptors()
 
 void retro_set_controller_port_device(unsigned port, unsigned device)
 {
+   if (port >= 2)
+      return;
+
    switch (device)
    {
       case RETRO_DEVICE_JOYPAD:
@@ -533,10 +537,10 @@ void retro_set_environment(retro_environment_t cb)
       { "px68k_joytype2" , "P2 Joypad Type; Default (2 Buttons)|CPSF-MD (8 Buttons)|CPSF-SFC (8 Buttons)" },
       { "px68k_adpcm_vol" , "ADPCM Volume; 15|0|1|2|3|4|5|6|7|8|9|10|11|12|13|14" },
       { "px68k_opm_vol" , "OPM Volume; 12|13|14|15|0|1|2|3|4|5|6|7|8|9|10|11" },
-      { "px68k_disk_drive" , "Swap Disks on Drive; FDD1|FDD0" },
 #ifndef NO_MERCURY
-      { "px68k_mercury_vol" , "OPM Volume; 13|14|15|0|1|2|3|4|5|6|7|8|9|10|11|12" },
+      { "px68k_mercury_vol" , "Mercury Volume; 13|14|15|0|1|2|3|4|5|6|7|8|9|10|11|12" },
 #endif
+      { "px68k_disk_drive" , "Swap Disks on Drive; FDD1|FDD0" },
       { NULL, NULL },
    };
 
@@ -557,8 +561,8 @@ void retro_set_environment(retro_environment_t cb)
 
 static void update_variables(void)
 {
-   int i;
-   char key[256];
+   int i = 0, snd_opt = 0;
+   char key[256] = {0};
    struct retro_variable var = {0};
 
    strcpy(key, "px68k_joytype");
@@ -653,10 +657,10 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      pcm_vol = atoi(var.value);
-      if (pcm_vol != Config.PCM_VOL)
+      snd_opt = atoi(var.value);
+      if (snd_opt != Config.PCM_VOL)
       {
-         Config.PCM_VOL = pcm_vol;
+         Config.PCM_VOL = snd_opt;
          ADPCM_SetVolume((BYTE)Config.PCM_VOL);
       }
    }
@@ -666,13 +670,28 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      opm_vol = atoi(var.value);
-      if (opm_vol != Config.OPM_VOL)
+      snd_opt = atoi(var.value);
+      if (snd_opt != Config.OPM_VOL)
       {
-         Config.OPM_VOL = opm_vol;
+         Config.OPM_VOL = snd_opt;
          OPM_SetVolume((BYTE)Config.OPM_VOL);
       }
    }
+
+#ifndef NO_MERCURY
+   var.key = "px68k_mercury_vol";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      snd_opt = atoi(var.value);
+      if (snd_opt != Config.MCR_VOL)
+      {
+         Config.MCR_VOL = snd_opt;
+         Mcry_SetVolume((BYTE)Config.MCR_VOL);
+      }
+   }
+#endif
 
    var.key = "px68k_disk_drive";
    var.value = NULL;
