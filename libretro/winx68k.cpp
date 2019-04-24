@@ -689,6 +689,9 @@ extern "C" int pmain(int argc, char *argv[])
 		case 2:
 			strcpy(Config.FDDImage[0], argv[1]);
 			break;
+		case 0:
+			// start menu when running without content
+			menu_mode = menu_enter;
 		}
 	}
 
