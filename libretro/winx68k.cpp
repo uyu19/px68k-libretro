@@ -941,10 +941,18 @@ extern "C" void exec_app_retro(){
 			int ret;
 
 			keyb_in = 0;
-			if (Core_Key_Sate[RETROK_PAGEDOWN])
+			if (Core_Key_Sate[RETROK_RIGHT] || Core_Key_Sate[RETROK_PAGEDOWN])
 				keyb_in |= JOY_RIGHT;
-			if (Core_Key_Sate[RETROK_PAGEUP])
+			if (Core_Key_Sate[RETROK_LEFT] || Core_Key_Sate[RETROK_PAGEUP])
 				keyb_in |= JOY_LEFT;
+			if (Core_Key_Sate[RETROK_UP])
+				keyb_in |= JOY_UP;
+			if (Core_Key_Sate[RETROK_DOWN])
+				keyb_in |= JOY_DOWN;
+			if (Core_Key_Sate[RETROK_z] || Core_Key_Sate[RETROK_RETURN])
+				keyb_in |= JOY_TRG1;
+			if (Core_Key_Sate[RETROK_x] || Core_Key_Sate[RETROK_BACKSPACE])
+				keyb_in |= JOY_TRG2;
 
 			Joystick_Update(TRUE, menu_key_down, 0);
 
