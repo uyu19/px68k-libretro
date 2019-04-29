@@ -538,6 +538,7 @@ void retro_set_environment(retro_environment_t cb)
    int nocontent = 1;
 
    struct retro_variable variables[] = {
+      { "px68k_menufontsize" , "Menu Font Size; normal|large" },
       { "px68k_cpuspeed" , "CPU Speed; 10Mhz|16Mhz|25Mhz|33Mhz (OC)|66Mhz (OC)|100Mhz (OC)|150Mhz (OC)|200Mhz (OC)" },
       { "px68k_ramsize" , "RAM Size (Restart); 2MB|3MB|4MB|5MB|6MB|7MB|8MB|9MB|10MB|11MB|12MB|1MB" },
       { "px68k_analog" , "Use Analog; OFF|ON" },
@@ -713,6 +714,17 @@ static void update_variables(void)
          disk_drive = 0;
       else
          disk_drive = 1;
+   }
+
+   var.key = "px68k_menufontsize";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "normal") == 0)
+         Config.MenuFontSize = 0;
+      else
+         Config.MenuFontSize = 1;
    }
 }
 

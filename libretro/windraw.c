@@ -1139,19 +1139,19 @@ int WinDraw_MenuInit(void)
 
 #include "menu_str_sjis.txt"
 const char menu_item_desc[][60] = {
-    "Reset / NMI reset / Quit",
-    "Select [Virtual Pad / Virtual Mouse]",
-    "Change / Eject floppy 0",
-    "Change / Eject floppy 1",
-    "Change / Eject HDD 0",
-    "Change / Eject HDD 1",
-    "Set frame skip",
-    "Set Sound frequency",
-    "Adjust the size of virtual pad and button",
-    "Change the position of the virtual button",
-    "Configure the pad",
-    "Set No Wait Mode",
-    "Set up JoyKey"
+	"Reset / NMI reset / Quit",
+	"Select [Virtual Pad / Virtual Mouse]",
+	"Change / Eject floppy 0",
+	"Change / Eject floppy 1",
+	"Change / Eject HDD 0",
+	"Change / Eject HDD 1",
+	"Set frame skip",
+	"Set Sound frequency",
+	"Adjust the size of virtual pad and button",
+	"Change the position of the virtual button",
+	"Configure the pad",
+	"Set No Wait Mode",
+	"Set up JoyKey"
 };
 
 void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
@@ -1162,7 +1162,7 @@ void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
 // ソフトウェアキーボード描画時にset_sbp(kbd_buffer)されているので戻す
 
 	set_sbp(menu_buffer);
-	set_mfs(16);
+	set_mfs(Config.MenuFontSize ? 24 : 16);
 
 	// タイトル
 	if (scr_type == x68k) {
@@ -1255,11 +1255,13 @@ void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
 				draw_str(" -- no disk --");
 			} else {
 				// 先頭のカレントディレクトリ名を表示しない
-				if (!strncmp(cur_dir_str, p, cur_dir_slen)) {
-					draw_str(p + cur_dir_slen);
-				} else {
-					draw_str(p);
-				}
+				char ptr[PATH_MAX];
+				if (!strncmp(cur_dir_str, p, cur_dir_slen))
+					strncpy(ptr, p + cur_dir_slen, sizeof(ptr));
+				else
+					strncpy(ptr, p, sizeof(ptr));
+				ptr[40] = '\0';
+				draw_str(ptr);
 			}
 		} else {
 			draw_str(menu_items[i + mkey_pos][mval_y[i + mkey_pos]]);
@@ -1297,6 +1299,7 @@ void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
 void WinDraw_DrawMenufile(struct menu_flist *mfl)
 {
 	int i;
+	char ptr[PATH_MAX];
 
 	// 下枠
 	//set_mcolor(0xf800); // red
@@ -1326,7 +1329,9 @@ void WinDraw_DrawMenufile(struct menu_flist *mfl)
 		// ディレクトリだったらファイル名を[]で囲う
 		set_mlocateC(3, i + 2);
 		if (mfl->type[i + mfl->ptr]) draw_str("[");
-		draw_str(mfl->name[i + mfl->ptr]);
+		strncpy(ptr, mfl->name[i + mfl->ptr], sizeof(ptr));
+		ptr[56] = '\0';
+		draw_str(ptr);
 		if (mfl->type[i + mfl->ptr]) draw_str("]");
 	}
 
