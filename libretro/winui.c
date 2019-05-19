@@ -843,6 +843,10 @@ int WinUI_Menu(int first)
 				// directory operation
 				if (!strcmp(mfl.name[y], "..")) {
 					shortcut_dir(drv);
+					mfl.stack[0][mfl.stackptr] = mfl.stack[1][mfl.stackptr] = 0;
+					mfl.stackptr = (mfl.stackptr - 1) % 256;
+					mfl.ptr = mfl.stack[0][mfl.stackptr];
+					mfl.y = mfl.stack[1][mfl.stackptr];
 				} else {
 					strcat(mfl.dir[drv], mfl.name[y]);
 #ifdef _WIN32
@@ -850,6 +854,11 @@ int WinUI_Menu(int first)
 #else
 					strcat(mfl.dir[drv], "/");
 #endif
+					mfl.stack[0][mfl.stackptr] = mfl.ptr;
+					mfl.stack[1][mfl.stackptr] = mfl.y;
+					mfl.stackptr = (mfl.stackptr + 1) % 256;
+					mfl.ptr = 0;
+					mfl.y = 0;
 				}
 				p6logd("directory selected: %s\n", mfl.name[y]);
 				menu_func[mkey_y].func(0);
@@ -871,8 +880,8 @@ int WinUI_Menu(int first)
 				menu_state = ms_key;
 				menu_redraw = 1;
 			}
-			mfl.y = 0;
-			mfl.ptr = 0;
+			mfl.ptr = mfl.stack[0][mfl.stackptr];
+			mfl.y = mfl.stack[1][mfl.stackptr];
 			break;
 		case ms_hwjoy_set:
 			// Go back keymode

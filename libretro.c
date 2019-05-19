@@ -65,8 +65,8 @@ uint16_t *videoBuffer;
 
 static retro_video_refresh_t video_cb;
 static retro_environment_t environ_cb;
-
-static  retro_input_poll_t input_poll_cb;
+static retro_input_poll_t input_poll_cb;
+static unsigned no_content;
 
 static void update_variables(void);
 
@@ -276,6 +276,15 @@ int pre_main(const char *argv)
    int i = 0;
    int Only1Arg;
 
+   for (i = 0; i < 64; i++)
+      xargv_cmd[i] = NULL;
+
+   if (no_content) {
+      p6logd("PARAMCOUNT = %d\n", PARAMCOUNT);
+      PARAMCOUNT = 0;
+      goto run_pmain;
+   }
+
    if (strlen(argv) > strlen("cmd"))
    {
       if (HandleExtension((char*)argv, "cmd") || HandleExtension((char*)argv, "CMD"))
@@ -305,9 +314,6 @@ int pre_main(const char *argv)
       parse_cmdline(argv);
 
    Only1Arg = (strcmp(ARGUV[0], "px68k") == 0) ? 0 : 1;
-
-   for (i = 0; i < 64; i++)
-      xargv_cmd[i] = NULL;
 
    if (Only1Arg)
    {
@@ -344,9 +350,11 @@ int pre_main(const char *argv)
       xargv_cmd[i] = (char*)(XARGV[i]);
    }
 
+run_pmain:
    pmain(PARAMCOUNT, (char **)xargv_cmd);
 
-   xargv_cmd[PARAMCOUNT - 2] = NULL;
+   if (PARAMCOUNT)
+      xargv_cmd[PARAMCOUNT - 2] = NULL;
 
    return 0;
 }
@@ -527,9 +535,10 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
 void retro_set_environment(retro_environment_t cb)
 {
-   environ_cb = cb;
+   int nocontent = 1;
 
    struct retro_variable variables[] = {
+      { "px68k_menufontsize" , "Menu Font Size; normal|large" },
       { "px68k_cpuspeed" , "CPU Speed; 10Mhz|16Mhz|25Mhz|33Mhz (OC)|66Mhz (OC)|100Mhz (OC)|150Mhz (OC)|200Mhz (OC)" },
       { "px68k_ramsize" , "RAM Size (Restart); 2MB|3MB|4MB|5MB|6MB|7MB|8MB|9MB|10MB|11MB|12MB|1MB" },
       { "px68k_analog" , "Use Analog; OFF|ON" },
@@ -555,8 +564,11 @@ void retro_set_environment(retro_environment_t cb)
       { port, 2 },
       { NULL, 0 },
    };
+
+   environ_cb = cb;
    cb(RETRO_ENVIRONMENT_SET_VARIABLES, variables);
    cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
+   cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &nocontent);
 }
 
 static void update_variables(void)
@@ -703,6 +715,17 @@ static void update_variables(void)
       else
          disk_drive = 1;
    }
+
+   var.key = "px68k_menufontsize";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "normal") == 0)
+         Config.MenuFontSize = 0;
+      else
+         Config.MenuFontSize = 1;
+   }
 }
 
 void update_input(void)
@@ -794,13 +817,17 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-   const char *full_path;
+   const char *full_path = 0;
 
-   full_path = info->path;
+   no_content = 1;
+   RPATH[0] = '\0';
 
-   strcpy(RPATH, full_path);
-
-   extract_directory(base_dir, info->path, sizeof(base_dir));
+   if (info && info->path) {
+      no_content = 0;
+      full_path = info->path;
+      strcpy(RPATH, full_path);
+      extract_directory(base_dir, info->path, sizeof(base_dir));
+   }
 
    p6logd("LOAD EMU\n");
 

@@ -185,6 +185,7 @@ void LoadConfig(void)
 	char	buf[CFGLEN];
 	FILEH fp;
 
+	Config.MenuFontSize = 0; // start with default normal menu size
 	winx = GetPrivateProfileInt(ini_title, "WinPosX", 0, winx68k_ini);
 	winy = GetPrivateProfileInt(ini_title, "WinPosY", 0, winx68k_ini);
 

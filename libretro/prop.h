@@ -53,6 +53,7 @@ typedef struct
 	int HwJoyBtn[8];
 	int NoWaitMode;
 	BYTE FrameRate;
+	int MenuFontSize; // font size of menu, 0 = normal, 1 = large
 } Win68Conf;
 
 extern Win68Conf Config;

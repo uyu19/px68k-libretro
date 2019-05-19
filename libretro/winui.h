@@ -29,6 +29,8 @@ struct menu_flist {
 	int ptr;
 	int num;
 	int y;
+	int stack[2][MFL_MAX];
+	int stackptr;
 };
 
 extern char menu_item_key[][15];
