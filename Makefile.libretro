@@ -48,8 +48,8 @@ ENDIANNESS_DEFINES :=
 CORE_DIR := .
 
 ifneq (,$(findstring unix,$(platform)))
-	CFLAGS = -g -O2 
-	CXXFLAGS = -g -O2  -fno-merge-constants 
+	CFLAGS += -g -O2 
+	CXXFLAGS += -g -O2  -fno-merge-constants 
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
