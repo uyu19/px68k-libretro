@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include "libretro.h"
+#include "libretro_core_options.h"
 #include "libretro/winx68k.h"
 #include "libretro/dswin.h"
 #include "libretro/prop.h"
@@ -537,22 +538,6 @@ void retro_set_environment(retro_environment_t cb)
 {
    int nocontent = 1;
 
-   struct retro_variable variables[] = {
-      { "px68k_menufontsize" , "Menu Font Size; normal|large" },
-      { "px68k_cpuspeed" , "CPU Speed; 10Mhz|16Mhz|25Mhz|33Mhz (OC)|66Mhz (OC)|100Mhz (OC)|150Mhz (OC)|200Mhz (OC)" },
-      { "px68k_ramsize" , "RAM Size (Restart); 2MB|3MB|4MB|5MB|6MB|7MB|8MB|9MB|10MB|11MB|12MB|1MB" },
-      { "px68k_analog" , "Use Analog; OFF|ON" },
-      { "px68k_joytype1" , "P1 Joypad Type; Default (2 Buttons)|CPSF-MD (8 Buttons)|CPSF-SFC (8 Buttons)" },
-      { "px68k_joytype2" , "P2 Joypad Type; Default (2 Buttons)|CPSF-MD (8 Buttons)|CPSF-SFC (8 Buttons)" },
-      { "px68k_adpcm_vol" , "ADPCM Volume; 15|0|1|2|3|4|5|6|7|8|9|10|11|12|13|14" },
-      { "px68k_opm_vol" , "OPM Volume; 12|13|14|15|0|1|2|3|4|5|6|7|8|9|10|11" },
-#ifndef NO_MERCURY
-      { "px68k_mercury_vol" , "Mercury Volume; 13|14|15|0|1|2|3|4|5|6|7|8|9|10|11|12" },
-#endif
-      { "px68k_disk_drive" , "Swap Disks on Drive; FDD1|FDD0" },
-      { NULL, NULL },
-   };
-
    static const struct retro_controller_description port[] = {
       { "RetroPad",              RETRO_DEVICE_JOYPAD },
       { "RetroKeyboard",         RETRO_DEVICE_KEYBOARD },
@@ -566,9 +551,9 @@ void retro_set_environment(retro_environment_t cb)
    };
 
    environ_cb = cb;
-   cb(RETRO_ENVIRONMENT_SET_VARIABLES, variables);
    cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
    cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &nocontent);
+   libretro_set_core_options(environ_cb);
 }
 
 static void update_variables(void)
@@ -656,9 +641,9 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       //fprintf(stderr, "value: %s\n", var.value);
-      if (!strcmp(var.value, "OFF"))
+      if (!strcmp(var.value, "disabled"))
          opt_analog = false;
-      if (!strcmp(var.value, "ON"))
+      if (!strcmp(var.value, "enabled"))
          opt_analog = true;
 
       //fprintf(stderr, "[libretro-test]: Analog: %s.\n",opt_analog?"ON":"OFF");
