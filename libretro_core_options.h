@@ -101,7 +101,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "12MB", NULL },
          { NULL, NULL},
       },
-      "1MB"
+      "2MB"
    },
    {
       "px68k_analog",
