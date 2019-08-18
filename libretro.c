@@ -9,6 +9,7 @@
 #include "libretro_core_options.h"
 #include "libretro/winx68k.h"
 #include "libretro/dswin.h"
+#include "libretro/keyboard.h"
 #include "libretro/prop.h"
 #include "fmgen/fmg_wrap.h"
 #include "x68k/adpcm.h"
@@ -322,7 +323,7 @@ int pre_main(const char *argv)
 
       Add_Option("px68k");
 
-      if (strlen(RPATH) >= strlen("hdf")) 
+      if (strlen(RPATH) >= strlen("hdf"))
       {
          if (!strcasecmp(&RPATH[strlen(RPATH) - strlen("hdf")], "hdf"))
          {
@@ -711,6 +712,33 @@ static void update_variables(void)
       else
          Config.MenuFontSize = 1;
    }
+
+   var.key = "px68k_joy1_select";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "XF1"))
+         Config.joy1_select_mapping = KBD_XF1;
+      else if (!strcmp(var.value, "XF2"))
+         Config.joy1_select_mapping = KBD_XF2;
+      else if (!strcmp(var.value, "XF3"))
+         Config.joy1_select_mapping = KBD_XF3;
+      else if (!strcmp(var.value, "XF4"))
+         Config.joy1_select_mapping = KBD_XF4;
+      else if (!strcmp(var.value, "XF5"))
+         Config.joy1_select_mapping = KBD_XF5;
+      else if (!strcmp(var.value, "F1"))
+         Config.joy1_select_mapping = KBD_F1;
+      else if (!strcmp(var.value, "F2"))
+         Config.joy1_select_mapping = KBD_F2;
+      else if (!strcmp(var.value, "OPT1"))
+         Config.joy1_select_mapping = KBD_OPT1;
+      else if (!strcmp(var.value, "OPT2"))
+         Config.joy1_select_mapping = KBD_OPT2;
+      else
+         Config.joy1_select_mapping = 0;
+   }
 }
 
 void update_input(void)
@@ -944,7 +972,7 @@ void retro_run(void)
    }
 
    if (CHANGEAV || CHANGEAV_TIMING)
-   {     
+   {
       if (CHANGEAV_TIMING)
       {
          update_timing();

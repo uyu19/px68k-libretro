@@ -1,6 +1,6 @@
 #ifdef  __cplusplus
 extern "C" {
-#endif 
+#endif
 
 #include "common.h"
 #include "fileio.h"
@@ -299,7 +299,7 @@ WinX68k_Init(void)
 		ZeroMemory(MEM, MEM_SIZE);
 
 	if (MEM && FONT && IPL) {
-	  	m68000_init();  
+	  	m68000_init();
 		return TRUE;
 	} else
 		return FALSE;
@@ -367,7 +367,7 @@ void WinX68k_Exec(void)
 
 	clk_total = (clk_total*clockmhz)/10;
 	clkdiv = clockmhz;
-	
+
 //	if (Config.XVIMode == 1) {
 //		clk_total = (clk_total*16)/10;
 //		clkdiv = 16;
@@ -382,7 +382,7 @@ void WinX68k_Exec(void)
 		p6logd("CPU Clock: %d%s\n",clkdiv,"MHz");
 		p6logd("RAM Size: %ld%s\n",ram_size/1000000,"MB");
 		old_clkdiv = clkdiv;
-		old_ram_size = ram_size;	
+		old_ram_size = ram_size;
 	}
 
 	ICount += clk_total;
@@ -575,7 +575,7 @@ enum {menu_out, menu_enter, menu_in};
 int menu_mode = menu_out;
 #ifdef  __cplusplus
 };
-#endif 
+#endif
 extern "C" int pmain(int argc, char *argv[])
 {
 
@@ -707,7 +707,7 @@ extern "C" int pmain(int argc, char *argv[])
 		send_keycode(b, 2);\
 	else if ( !Core_Key_Sate[a] && Core_Key_Sate[a]!=Core_old_Key_Sate[a]  )\
 		send_keycode(b, 1);\
-}	
+}
 
 extern "C" void handle_retrok(){
 
@@ -844,7 +844,12 @@ extern "C" void handle_retrok(){
 //	KEYP(RETROK_MENU,0x55); //xf1
 //	KEYP(RETROK_KP_PERIOD,0x56); //xf2
 //	KEYP(RETROK_KP_PERIOD,0x57); //xf3
-//	KEYP(RETROK_KP_PERIOD,0x58); //xf4 
+
+	// only process kb_to_joypad map when its not zero, else button is used as joypad select mode
+	if (Config.joy1_select_mapping)
+		KEYP(RETROK_XFX, Config.joy1_select_mapping);
+
+//	KEYP(RETROK_KP_PERIOD,0x58); //xf4
 //	KEYP(RETROK_KP_PERIOD,0x59); //xf5
 //	KEYP(RETROK_KP_PERIOD,0x5a); //kana
 //	KEYP(RETROK_KP_PERIOD,0x5b); //romaji
@@ -904,9 +909,9 @@ extern "C" void exec_app_retro(){
 
 		int mouse_l    = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
 		int mouse_r    = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
-		      
+
   	        if(mbL==0 && mouse_l){
-      			mbL=1;		
+      			mbL=1;
 			Mouse_Event(1,1.0,0);
 		}
    		else if(mbL==1 && !mouse_l)
@@ -915,7 +920,7 @@ extern "C" void exec_app_retro(){
 			Mouse_Event(1,0,0);
 		}
   	        if(mbR==0 && mouse_r){
-      			mbR=1;		
+      			mbR=1;
 			Mouse_Event(2,1.0,0);
 		}
    		else if(mbR==1 && !mouse_r)
@@ -929,8 +934,14 @@ extern "C" void exec_app_retro(){
    		for(i=0;i<320;i++)
       			Core_Key_Sate[i]=input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0,i) ? 0x80: 0;
 
+      	Core_Key_Sate[RETROK_XFX] = 0;
+
    		if (input_state_cb(0, RETRO_DEVICE_JOYPAD,0, RETRO_DEVICE_ID_JOYPAD_L2))	//Joypad Key for Menu
 				Core_Key_Sate[RETROK_F12] = 0x80;
+
+		if (Config.joy1_select_mapping)
+			if (input_state_cb(0, RETRO_DEVICE_JOYPAD,0, RETRO_DEVICE_ID_JOYPAD_SELECT))	//Joypad Key for Mapping
+				Core_Key_Sate[RETROK_XFX] = 0x80;
 
 		if(memcmp( Core_Key_Sate,Core_old_Key_Sate , sizeof(Core_Key_Sate) ) )
 			handle_retrok();

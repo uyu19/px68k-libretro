@@ -61,7 +61,7 @@ struct retro_core_option_definition option_defs_us[] = {
       {
          { "normal", NULL },
          { "large",  NULL },
-         { NULL, NULL},
+         { NULL,     NULL },
       },
       "normal"
    },
@@ -78,7 +78,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "100Mhz (OC)", NULL },
          { "150Mhz (OC)", NULL },
          { "200Mhz (OC)", NULL },
-         { NULL, NULL},
+         { NULL,          NULL },
       },
       "10Mhz"
    },
@@ -99,7 +99,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "10MB", NULL },
          { "11MB", NULL },
          { "12MB", NULL },
-         { NULL, NULL},
+         { NULL,   NULL },
       },
       "2MB"
    },
@@ -110,7 +110,7 @@ struct retro_core_option_definition option_defs_us[] = {
       {
          { "disabled", NULL },
          { "enabled",  NULL },
-         { NULL, NULL},
+         { NULL,       NULL },
       },
       "disabled"
    },
@@ -122,7 +122,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "Default (2 Buttons)",  NULL },
          { "CPSF-MD (8 Buttons)",  NULL },
          { "CPSF-SFC (8 Buttons)", NULL },
-         { NULL, NULL},
+         { NULL,                   NULL },
       },
       "Default (2 Buttons)"
    },
@@ -134,9 +134,28 @@ struct retro_core_option_definition option_defs_us[] = {
          { "Default (2 Buttons)",  NULL },
          { "CPSF-MD (8 Buttons)",  NULL },
          { "CPSF-SFC (8 Buttons)", NULL },
-         { NULL, NULL},
+         { NULL,                   NULL },
       },
       "Default (2 Buttons)"
+   },
+   {
+      "px68k_joy1_select",
+      "P1 Joystick Select Mapping",
+      "Assigns a keyboard key to joypad's SELECT button since some games use these keys as the Start or Insect Coin buttons.",
+      {
+         { "Default", NULL },
+         { "XF1",     NULL },
+         { "XF2",     NULL },
+         { "XF3",     NULL },
+         { "XF4",     NULL },
+         { "XF5",     NULL },
+         { "OPT1",    NULL },
+         { "OPT2",    NULL },
+         { "F1",      NULL },
+         { "F2",      NULL },
+         { NULL,      NULL },
+      },
+      "Default"
    },
    {
       "px68k_adpcm_vol",
@@ -159,7 +178,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "13", NULL },
          { "14", NULL },
          { "15", NULL },
-         { NULL, NULL},
+         { NULL, NULL },
       },
       "15"
    },
@@ -184,7 +203,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "13", NULL },
          { "14", NULL },
          { "15", NULL },
-         { NULL, NULL},
+         { NULL, NULL },
       },
       "12"
    },
@@ -210,7 +229,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "13", NULL },
          { "14", NULL },
          { "15", NULL },
-         { NULL, NULL},
+         { NULL, NULL },
       },
       "13"
    },
@@ -222,7 +241,7 @@ struct retro_core_option_definition option_defs_us[] = {
       {
          { "FDD1", NULL },
          { "FDD0", NULL },
-         { NULL, NULL},
+         { NULL,   NULL },
       },
       "FDD1"
    },
