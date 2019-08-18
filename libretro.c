@@ -42,8 +42,8 @@ const char *retro_content_directory;
 char retro_system_conf[512];
 char base_dir[MAX_PATH];
 
-char Core_Key_Sate[512];
-char Core_old_Key_Sate[512];
+char Core_Key_State[512];
+char Core_old_Key_State[512];
 
 bool joypad1, joypad2;
 
@@ -941,8 +941,8 @@ void retro_init(void)
 */
    update_variables();
 
-   memset(Core_Key_Sate, 0, 512);
-   memset(Core_old_Key_Sate, 0, sizeof(Core_old_Key_Sate));
+   memset(Core_Key_State, 0, 512);
+   memset(Core_old_Key_State, 0, sizeof(Core_old_Key_State));
 }
 
 void retro_deinit(void)
