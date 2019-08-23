@@ -1,6 +1,6 @@
 #ifdef  __cplusplus
 extern "C" {
-#endif 
+#endif
 
 #include "common.h"
 #include "fileio.h"
@@ -299,7 +299,7 @@ WinX68k_Init(void)
 		ZeroMemory(MEM, MEM_SIZE);
 
 	if (MEM && FONT && IPL) {
-	  	m68000_init();  
+	  	m68000_init();
 		return TRUE;
 	} else
 		return FALSE;
@@ -367,7 +367,7 @@ void WinX68k_Exec(void)
 
 	clk_total = (clk_total*clockmhz)/10;
 	clkdiv = clockmhz;
-	
+
 //	if (Config.XVIMode == 1) {
 //		clk_total = (clk_total*16)/10;
 //		clkdiv = 16;
@@ -382,7 +382,7 @@ void WinX68k_Exec(void)
 		p6logd("CPU Clock: %d%s\n",clkdiv,"MHz");
 		p6logd("RAM Size: %ld%s\n",ram_size/1000000,"MB");
 		old_clkdiv = clkdiv;
-		old_ram_size = ram_size;	
+		old_ram_size = ram_size;
 	}
 
 	ICount += clk_total;
@@ -563,8 +563,8 @@ extern "C" {
 #include "libretro.h"
 
 extern retro_input_state_t input_state_cb;
-extern char Core_Key_Sate[512];
-extern char Core_old_Key_Sate[512];
+extern char Core_Key_State[512];
+extern char Core_old_Key_State[512];
 
 int mb1=0,mb2=0;
 extern int retrow,retroh,CHANGEAV;
@@ -575,7 +575,7 @@ enum {menu_out, menu_enter, menu_in};
 int menu_mode = menu_out;
 #ifdef  __cplusplus
 };
-#endif 
+#endif
 extern "C" int pmain(int argc, char *argv[])
 {
 
@@ -703,11 +703,11 @@ extern "C" int pmain(int argc, char *argv[])
 }
 
 #define KEYP(a,b) {\
-	if(Core_Key_Sate[a] && Core_Key_Sate[a]!=Core_old_Key_Sate[a]  )\
+	if(Core_Key_State[a] && Core_Key_State[a]!=Core_old_Key_State[a]  )\
 		send_keycode(b, 2);\
-	else if ( !Core_Key_Sate[a] && Core_Key_Sate[a]!=Core_old_Key_Sate[a]  )\
+	else if ( !Core_Key_State[a] && Core_Key_State[a]!=Core_old_Key_State[a]  )\
 		send_keycode(b, 1);\
-}	
+}
 
 extern "C" void handle_retrok(){
 
@@ -715,25 +715,25 @@ extern "C" void handle_retrok(){
 	int key_shift,key_control,key_alt;
 
 	/* SHIFT STATE */
-	if ((Core_Key_Sate[RETROK_LSHIFT]) || (Core_Key_Sate[RETROK_RSHIFT]))
+	if ((Core_Key_State[RETROK_LSHIFT]) || (Core_Key_State[RETROK_RSHIFT]))
 		key_shift = 1;
 	else
 		key_shift = 0;
 
 	/* CONTROL STATE */
-	if ((Core_Key_Sate[RETROK_LCTRL]) || (Core_Key_Sate[RETROK_RCTRL]))
+	if ((Core_Key_State[RETROK_LCTRL]) || (Core_Key_State[RETROK_RCTRL]))
 		key_control = 1;
 	else
 		key_control = 0;
 
 	/* ALT STATE */
-	if ((Core_Key_Sate[RETROK_LALT]) || (Core_Key_Sate[RETROK_RALT]))
+	if ((Core_Key_State[RETROK_LALT]) || (Core_Key_State[RETROK_RALT]))
 		key_alt = 1;
 	else
 		key_alt = 0;
 #endif
 
-	if(Core_Key_Sate[RETROK_F12] && Core_Key_Sate[RETROK_F12]!=Core_old_Key_Sate[RETROK_F12]  )
+	if(Core_Key_State[RETROK_F12] && Core_Key_State[RETROK_F12]!=Core_old_Key_State[RETROK_F12]  )
 	{
 		if (menu_mode == menu_out) {
 			oldrw=retrow;oldrh=retroh;
@@ -750,7 +750,7 @@ extern "C" void handle_retrok(){
 	}
 
 #ifdef WIN68DEBUG
-	if(Core_Key_Sate[RETROK_F11] && Core_Key_Sate[RETROK_F11]!=Core_old_Key_Sate[RETROK_F11]  )
+	if(Core_Key_State[RETROK_F11] && Core_Key_State[RETROK_F11]!=Core_old_Key_State[RETROK_F11]  )
 		if (i == RETROK_F11) {
 			traceflag ^= 1;
 			printf("trace %s\n", (traceflag)?"on":"off");
@@ -844,7 +844,12 @@ extern "C" void handle_retrok(){
 //	KEYP(RETROK_MENU,0x55); //xf1
 //	KEYP(RETROK_KP_PERIOD,0x56); //xf2
 //	KEYP(RETROK_KP_PERIOD,0x57); //xf3
-//	KEYP(RETROK_KP_PERIOD,0x58); //xf4 
+
+	// only process kb_to_joypad map when its not zero, else button is used as joypad select mode
+	if (Config.joy1_select_mapping)
+		KEYP(RETROK_XFX, Config.joy1_select_mapping);
+
+//	KEYP(RETROK_KP_PERIOD,0x58); //xf4
 //	KEYP(RETROK_KP_PERIOD,0x59); //xf5
 //	KEYP(RETROK_KP_PERIOD,0x5a); //kana
 //	KEYP(RETROK_KP_PERIOD,0x5b); //romaji
@@ -904,9 +909,9 @@ extern "C" void exec_app_retro(){
 
 		int mouse_l    = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
 		int mouse_r    = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
-		      
+
   	        if(mbL==0 && mouse_l){
-      			mbL=1;		
+      			mbL=1;
 			Mouse_Event(1,1.0,0);
 		}
    		else if(mbL==1 && !mouse_l)
@@ -915,7 +920,7 @@ extern "C" void exec_app_retro(){
 			Mouse_Event(1,0,0);
 		}
   	        if(mbR==0 && mouse_r){
-      			mbR=1;		
+      			mbR=1;
 			Mouse_Event(2,1.0,0);
 		}
    		else if(mbR==1 && !mouse_r)
@@ -927,31 +932,37 @@ extern "C" void exec_app_retro(){
   		int i;
 
    		for(i=0;i<320;i++)
-      			Core_Key_Sate[i]=input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0,i) ? 0x80: 0;
+      			Core_Key_State[i]=input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0,i) ? 0x80: 0;
+
+      	Core_Key_State[RETROK_XFX] = 0;
 
    		if (input_state_cb(0, RETRO_DEVICE_JOYPAD,0, RETRO_DEVICE_ID_JOYPAD_L2))	//Joypad Key for Menu
-				Core_Key_Sate[RETROK_F12] = 0x80;
+				Core_Key_State[RETROK_F12] = 0x80;
 
-		if(memcmp( Core_Key_Sate,Core_old_Key_Sate , sizeof(Core_Key_Sate) ) )
+		if (Config.joy1_select_mapping)
+			if (input_state_cb(0, RETRO_DEVICE_JOYPAD,0, RETRO_DEVICE_ID_JOYPAD_SELECT))	//Joypad Key for Mapping
+				Core_Key_State[RETROK_XFX] = 0x80;
+
+		if(memcmp( Core_Key_State,Core_old_Key_State , sizeof(Core_Key_State) ) )
 			handle_retrok();
 
-   		memcpy(Core_old_Key_Sate,Core_Key_Sate , sizeof(Core_Key_Sate) );
+   		memcpy(Core_old_Key_State,Core_Key_State , sizeof(Core_Key_State) );
 
 		if (menu_mode != menu_out) {
 			int ret;
 
 			keyb_in = 0;
-			if (Core_Key_Sate[RETROK_RIGHT] || Core_Key_Sate[RETROK_PAGEDOWN])
+			if (Core_Key_State[RETROK_RIGHT] || Core_Key_State[RETROK_PAGEDOWN])
 				keyb_in |= JOY_RIGHT;
-			if (Core_Key_Sate[RETROK_LEFT] || Core_Key_Sate[RETROK_PAGEUP])
+			if (Core_Key_State[RETROK_LEFT] || Core_Key_State[RETROK_PAGEUP])
 				keyb_in |= JOY_LEFT;
-			if (Core_Key_Sate[RETROK_UP])
+			if (Core_Key_State[RETROK_UP])
 				keyb_in |= JOY_UP;
-			if (Core_Key_Sate[RETROK_DOWN])
+			if (Core_Key_State[RETROK_DOWN])
 				keyb_in |= JOY_DOWN;
-			if (Core_Key_Sate[RETROK_z] || Core_Key_Sate[RETROK_RETURN])
+			if (Core_Key_State[RETROK_z] || Core_Key_State[RETROK_RETURN])
 				keyb_in |= JOY_TRG1;
-			if (Core_Key_Sate[RETROK_x] || Core_Key_Sate[RETROK_BACKSPACE])
+			if (Core_Key_State[RETROK_x] || Core_Key_State[RETROK_BACKSPACE])
 				keyb_in |= JOY_TRG2;
 
 			Joystick_Update(TRUE, menu_key_down, 0);

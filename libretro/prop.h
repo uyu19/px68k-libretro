@@ -54,6 +54,7 @@ typedef struct
 	int NoWaitMode;
 	BYTE FrameRate;
 	int MenuFontSize; // font size of menu, 0 = normal, 1 = large
+	int joy1_select_mapping; /* used for keyboard to joypad map for P1 Select */
 } Win68Conf;
 
 extern Win68Conf Config;
