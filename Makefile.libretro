@@ -48,8 +48,8 @@ ENDIANNESS_DEFINES :=
 CORE_DIR := .
 
 ifneq (,$(findstring unix,$(platform)))
-	CFLAGS = -g -O2 
-	CXXFLAGS = -g -O2  -fno-merge-constants 
+	CFLAGS += -g -O2 
+	CXXFLAGS += -g -O2  -fno-merge-constants 
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
@@ -259,8 +259,8 @@ else ifneq (,$(findstring windows_msvc2017,$(platform)))
 	CFLAGS += -DHAVE_C99_VARIADIC_MACROS
 else
 	TARGET :=  $(TARGET_NAME)_libretro.dll
-	CC = gcc
-	CXX = g++
+	CC ?= gcc
+	CXX ?= g++
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
 	LDFLAGS += -static-libgcc -static-libstdc++ 
 	EXTRA_LDF = -lwinmm -Wl,--export-all-symbols
