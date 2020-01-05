@@ -740,6 +740,17 @@ static void update_variables(void)
       else
          Config.joy1_select_mapping = 0;
    }
+
+   var.key = "px68k_disk_path";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled"))
+         Config.disk_path = 0;
+      if (!strcmp(var.value, "enabled"))
+         Config.disk_path = 1;
+   }
 }
 
 void update_input(void)
@@ -944,6 +955,10 @@ void retro_init(void)
     struct retro_keyboard_callback cbk = { keyboard_cb };
     environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &cbk);
 */
+
+   /* set sane defaults */
+   Config.disk_path = 1;
+
    update_variables();
 
    memset(Core_Key_State, 0, 512);
