@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2003,2008 NONAKA Kimihiro
  * All rights reserved.
  *
@@ -100,32 +100,46 @@ struct menu_flist mfl;
 
 /***** menu items *****/
 
-#define MENU_NUM 13
+#define MENU_NUM 5 //13
 #define MENU_WINDOW 7
 
-int mval_y[] = {0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 1, 1};
+int mval_y[] = {
+	0,
+	0,
+	0,
+	0,
+	0
+};
 
-enum menu_id {M_SYS, M_JOM, M_FD0, M_FD1, M_HD0, M_HD1, M_FS, M_SR, M_VKS, M_VBS, M_HJS, M_NW, M_JK};
+enum menu_id {
+	M_SYS,
+	M_FD0,
+	M_FD1,
+	M_HD0,
+	M_HD1
+};
 
 // Max # of characters is 15.
-char menu_item_key[][15] = {"SYSTEM", "Joy/Mouse", "FDD0", "FDD1", "HDD0", "HDD1", "Frame Skip", "Sound Rate", "VKey Size", "VBtn Swap", "HwJoy Setting", "No Wait Mode", "JoyKey", "uhyo", ""};
+char menu_item_key[][15] = {
+	"SYSTEM",
+	"FDD0",
+	"FDD1",
+	"HDD0",
+	"HDD1",
+	"",
+	"",
+	"uhyo",
+	""
+};
 
 // Max # of characters is 30.
 // Max # of items including terminater `""' in each line is 15.
 char menu_items[][15][30] = {
 	{"RESET", "NMI RESET", "QUIT", ""},
-	{"Joystick", "Mouse", ""},
 	{"dummy", "EJECT", ""},
 	{"dummy", "EJECT", ""},
 	{"dummy", "EJECT", ""},
-	{"dummy", "EJECT", ""},
-	{"Auto Frame Skip", "Full Frame", "1/2 Frame", "1/3 Frame", "1/4 Frame", "1/5 Frame", "1/6 Frame", "1/8 Frame", "1/16 Frame", "1/32 Frame", "1/60 Frame", ""},
-	{"No Sound", "11025Hz", "22050Hz", "44100Hz", "48000Hz", ""},
-	{"Ultra Huge", "Super Huge", "Huge", "Large", "Medium", "Small", ""},
-	{"TRIG1 TRIG2", "TRIG2 TRIG1", ""},
-	{"Axis0: xx", "Axis1: xx", "Hat: xx", "Button0: xx", "Button1: xx",  ""},
-	{"Off", "On", ""},
-	{"Off", "On", ""}
+	{"dummy", "EJECT", ""}
 };
 
 static void menu_system(int v);
@@ -145,19 +159,11 @@ struct _menu_func {
 };
 
 struct _menu_func menu_func[] = {
-	{menu_system, 0}, 
-	{menu_joy_or_mouse, 1},
+	{menu_system, 0},
 	{menu_create_flist, 0},
 	{menu_create_flist, 0},
 	{menu_create_flist, 0},
-	{menu_create_flist, 0},
-	{menu_frame_skip, 1},
-	{menu_sound_rate, 1},
-	{menu_vkey_size, 1},
-	{menu_vbtn_swap, 1},
-	{menu_hwjoy_setting, 0},
-	{menu_nowait, 1},
-	{menu_joykey, 1}
+	{menu_create_flist, 0}
 };
 
 int WinUI_get_drv_num(int key)
@@ -175,7 +181,7 @@ int WinUI_get_drv_num(int key)
 
 static void menu_hwjoy_print(int v)
 {
-	if (v <= 1) {
+	/*if (v <= 1) {
 		sprintf(menu_items[M_HJS][v], "Axis%d(%s): %d",
 			v,
 			(v == 0)? "Left/Right" : "Up/Down",
@@ -186,7 +192,7 @@ static void menu_hwjoy_print(int v)
 		sprintf(menu_items[M_HJS][v], "Button%d: %d",
 			v - 3,
 			Config.HwJoyBtn[v - 3]);
-	}
+	}*/
 }
 
 /******************************************************************************
@@ -197,44 +203,9 @@ WinUI_Init(void)
 {
 	int i;
 
-	mval_y[M_JOM] = Config.JoyOrMouse;
-	if (Config.FrameRate == 7) {
-		mval_y[M_FS] = 0;
-	} else if (Config.FrameRate == 8) {
-		mval_y[M_FS] = 7;
-	} else if (Config.FrameRate == 16) {
-		mval_y[M_FS] = 8;
-	} else if (Config.FrameRate == 32) {
-		mval_y[M_FS] = 9;
-	} else if (Config.FrameRate == 60) {
-		mval_y[M_FS] = 10;
-	} else {
-		mval_y[M_FS] = Config.FrameRate;
-	}
-
-	if (Config.SampleRate == 0) {
-		mval_y[M_SR] = 0;
-	} else if (Config.SampleRate == 11025) {
-		mval_y[M_SR] = 1;
-	} else if (Config.SampleRate == 22050) {
-		mval_y[M_SR] = 2;
-	} else if (Config.SampleRate == 44100) {
-		mval_y[M_SR] = 3;
-	} else if (Config.SampleRate == 48000) {
-		mval_y[M_SR] = 4;
-	} else {
-		mval_y[M_SR] = 1;
-	}
-
-	mval_y[M_VKS] = Config.VkeyScale;
-	mval_y[M_VBS] = Config.VbtnSwap;
-
 	for (i = 0; i < 11; i++) {
 		menu_hwjoy_print(i);
 	}
-
-	mval_y[M_NW] = Config.NoWaitMode;
-	mval_y[M_JK] = Config.JoyKey;
 
 #if defined(ANDROID)
 #define CUR_DIR_STR winx68k_dir
@@ -834,7 +805,7 @@ int WinUI_Menu(int first)
 			drv = WinUI_get_drv_num(mkey_y);
 			p6logd("***** drv:%d *****\n", drv);
 			if (drv < 0) {
-				break; 
+				break;
 			}
 			y = mfl.ptr + mfl.y;
 			// file loaded

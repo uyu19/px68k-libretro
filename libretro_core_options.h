@@ -250,14 +250,69 @@ struct retro_core_option_definition option_defs_us[] = {
       "Save Disk Paths",
       "When enabled, saves the paths of the last loaded disks in drives and auto-loads them on startup. When disabled, FDD and HDD starts empty.",
       {
-         { "enabled", NULL },
+         { "enabled",  NULL },
          { "disabled", NULL },
-         { NULL,   NULL },
+         { NULL,       NULL },
       },
       "enabled"
    },
 
-   { NULL, NULL, NULL, {{0}}, NULL },
+   /* from PX68K Menu */
+   {
+      "px68k_joy_mouse",
+      "Joy/Mouse",
+      "Select [Mouse] or [Joypad] to controls in-game mouse pointer.",
+      {
+         { "Mouse",    NULL},
+         { "Joystick", NULL}, /* unimplemented yet */
+         { NULL,       NULL },
+      },
+      "Mouse"
+   },
+   {
+      "px68k_vbtn_swap",
+      "VBtn Swap",
+      "When set to [enabled], swaps TRIG1 and TRIG2 buttons when a 2-button gamepad is selected.",
+      {
+         { "TRIG1 TRIG2", NULL},
+         { "TRIG2 TRIG1", NULL},
+         { NULL,          NULL },
+      },
+      "TRIG1 TRIG2"
+   },
+   {
+      "px68k_no_wait_mode",
+      "No Wait Mode",
+      "When set to [enabled], core runs as fast as possible. Can cause audio dysnc but useful if using fast-forward. Setting this [disabled] is recommended.",
+      {
+         { "disabled", NULL},
+         { "enabled",  NULL},
+         { NULL,       NULL },
+      },
+      "disabled"
+   },
+   {
+      "px68k_frameskip",
+      "Frames Skip",
+      "Choose how much frames should be skipped to improve performance at the expense of visual smoothness.",
+      {
+         { "Full Frame",      NULL },
+         { "1/2 Frame",       NULL },
+         { "1/3 Frame",       NULL },
+         { "1/4 Frame",       NULL },
+         { "1/5 Frame",       NULL },
+         { "1/6 Frame",       NULL },
+         { "1/8 Frame",       NULL },
+         { "1/16 Frame",      NULL },
+         { "1/32 Frame",      NULL },
+         { "1/60 Frame",      NULL },
+         { "Auto Frame Skip", NULL },
+         { NULL,   NULL },
+      },
+      "Full Frame"
+   },
+
+   { NULL, NULL, NULL, {{0}}, NULL }
 };
 
 /*

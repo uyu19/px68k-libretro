@@ -1140,18 +1140,10 @@ int WinDraw_MenuInit(void)
 #include "menu_str_sjis.txt"
 const char menu_item_desc[][60] = {
 	"Reset / NMI reset / Quit",
-	"Select [Virtual Pad / Virtual Mouse]",
 	"Change / Eject floppy 0",
 	"Change / Eject floppy 1",
 	"Change / Eject HDD 0",
-	"Change / Eject HDD 1",
-	"Set frame skip",
-	"Set Sound frequency",
-	"Adjust the size of virtual pad and button",
-	"Change the position of the virtual button",
-	"Configure the pad",
-	"Set No Wait Mode",
-	"Set up JoyKey"
+	"Change / Eject HDD 1"
 };
 
 void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
