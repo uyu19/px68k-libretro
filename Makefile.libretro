@@ -339,24 +339,19 @@ ifeq ($(DEBUG), 1)
 else ifneq (,$(findstring msvc,$(platform)))
    FLAGS += -O2
 else
-   FLAGS += -O3 -ffast-math -fomit-frame-pointer -fpermissive 
+   FLAGS += -O3 -ffast-math -fomit-frame-pointer
 endif
 
 LDFLAGS +=  $(fpic) $(SHARED) $(EXTRA_LDF) 
 FLAGS   += $(INCFLAGS) 
-FLAGS += -DC68K_NO_JUMP_TABLE 
+FLAGS += -DC68K_NO_JUMP_TABLE
 
 WARNINGS :=  
-	
+
 FLAGS += -D__LIBRETRO__ $(ENDIANNESS_DEFINES) $(WARNINGS) $(fpic) 
 
-CXXFLAGS += $(FLAGS) $(CPU_FLAGS)
+CXXFLAGS += $(FLAGS) $(CPU_FLAGS) -fpermissive 
 CFLAGS += $(FLAGS) -std=gnu99 $(CPU_FLAGS)
-
-ifdef CYCLONE
-CFLAGS += -DCYCLONE
-CXXFLAGS += -DCYCLONE
-endif
 
 $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
