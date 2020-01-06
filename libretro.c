@@ -58,6 +58,7 @@ float FRAMERATE = MODE_HIGH;
 int JOY_TYPE[2] = {0}; /* Set controller type for each player to use */
 int clockmhz = 10;
 DWORD ram_size;
+DWORD libretro_supports_input_bitmasks = 0;
 
 int pauseg = 0;
 
@@ -934,6 +935,10 @@ void retro_init(void)
       exit(0);
    }
 
+   libretro_supports_input_bitmasks = 0;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
+      libretro_supports_input_bitmasks = 1;
+
    attach_disk_swap_interface();
 /*
     struct retro_keyboard_callback cbk = { keyboard_cb };
@@ -949,6 +954,7 @@ void retro_deinit(void)
 {
    end_loop_retro();
    p6logd("Retro DeInit\n");
+   libretro_supports_input_bitmasks = 0;
 }
 
 void retro_reset(void)
