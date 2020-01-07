@@ -300,15 +300,19 @@ void LoadConfig(void)
 		}
 	}
 
-	for (i = 0; i < 2; i++) {
-		sprintf(buf, "FDD%d", i);
-		GetPrivateProfileString(ini_title, buf, "", Config.FDDImage[i], MAX_PATH, winx68k_ini);
-	}
-
-	for (i=0; i<16; i++)
+	if (Config.disk_path)
 	{
-		sprintf(buf, "HDD%d", i);
-		GetPrivateProfileString(ini_title, buf, "", Config.HDImage[i], MAX_PATH, winx68k_ini);
+		for (i = 0; i < 2; i++) {
+			sprintf(buf, "FDD%d", i);
+			GetPrivateProfileString(ini_title, buf, "", Config.FDDImage[i], MAX_PATH, winx68k_ini);
+		}
+
+
+		for (i=0; i<16; i++)
+		{
+			sprintf(buf, "HDD%d", i);
+			GetPrivateProfileString(ini_title, buf, "", Config.HDImage[i], MAX_PATH, winx68k_ini);
+		}
 	}
 
 #if 0
@@ -436,17 +440,20 @@ void SaveConfig(void)
 		}
 	}
 
-	for (i = 0; i < 2; i++)
+	if (Config.disk_path)
 	{
-		/* printf("i: %d", i); */
-		sprintf(buf, "FDD%d", i);
-		WritePrivateProfileString(ini_title, buf, Config.FDDImage[i], winx68k_ini);
-	}
+		for (i = 0; i < 2; i++)
+		{
+			/* printf("i: %d", i); */
+			sprintf(buf, "FDD%d", i);
+			WritePrivateProfileString(ini_title, buf, Config.FDDImage[i], winx68k_ini);
+		}
 
-	for (i=0; i<16; i++)
-	{
-		sprintf(buf, "HDD%d", i);
-		WritePrivateProfileString(ini_title, buf, Config.HDImage[i], winx68k_ini);
+		for (i=0; i<16; i++)
+		{
+			sprintf(buf, "HDD%d", i);
+			WritePrivateProfileString(ini_title, buf, Config.HDImage[i], winx68k_ini);
+		}
 	}
 
 #if 0

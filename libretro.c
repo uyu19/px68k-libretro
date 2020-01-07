@@ -58,6 +58,7 @@ float FRAMERATE = MODE_HIGH;
 int JOY_TYPE[2] = {0}; /* Set controller type for each player to use */
 int clockmhz = 10;
 DWORD ram_size;
+DWORD libretro_supports_input_bitmasks = 0;
 
 int pauseg = 0;
 
@@ -739,6 +740,17 @@ static void update_variables(void)
       else
          Config.joy1_select_mapping = 0;
    }
+
+   var.key = "px68k_disk_path";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled"))
+         Config.disk_path = 0;
+      if (!strcmp(var.value, "enabled"))
+         Config.disk_path = 1;
+   }
 }
 
 void update_input(void)
@@ -934,11 +946,19 @@ void retro_init(void)
       exit(0);
    }
 
+   libretro_supports_input_bitmasks = 0;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
+      libretro_supports_input_bitmasks = 1;
+
    attach_disk_swap_interface();
 /*
     struct retro_keyboard_callback cbk = { keyboard_cb };
     environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &cbk);
 */
+
+   /* set sane defaults */
+   Config.disk_path = 1;
+
    update_variables();
 
    memset(Core_Key_State, 0, 512);
@@ -949,6 +969,7 @@ void retro_deinit(void)
 {
    end_loop_retro();
    p6logd("Retro DeInit\n");
+   libretro_supports_input_bitmasks = 0;
 }
 
 void retro_reset(void)
