@@ -751,6 +751,71 @@ static void update_variables(void)
       if (!strcmp(var.value, "enabled"))
          Config.disk_path = 1;
    }
+
+   /* PX68K Menu */
+
+   var.key = "px68k_joy_mouse";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      /* TODO: Only mouse is implemented */
+      if (!strcmp(var.value, "Joystick"))
+         Config.JoyOrMouse = 0;
+      else if (!strcmp(var.value, "Mouse"))
+         Config.JoyOrMouse = 1;
+   }
+
+   var.key = "px68k_vbtn_swap";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "TRIG1 TRIG2"))
+         Config.VbtnSwap = 0;
+      else if (!strcmp(var.value, "TRIG2 TRIG1"))
+         Config.VbtnSwap = 1;
+   }
+
+   var.key = "px68k_no_wait_mode";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled"))
+         Config.NoWaitMode = 0;
+      else if (!strcmp(var.value, "enabled"))
+         Config.NoWaitMode = 1;
+   }
+
+   var.key = "px68k_frameskip";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "Auto Frame Skip"))
+         Config.FrameRate = 7;
+      else if (!strcmp(var.value, "1/2 Frame"))
+         Config.FrameRate = 2;
+      else if (!strcmp(var.value, "1/3 Frame"))
+         Config.FrameRate = 3;
+      else if (!strcmp(var.value, "1/4 Frame"))
+         Config.FrameRate = 4;
+      else if (!strcmp(var.value, "1/5 Frame"))
+         Config.FrameRate = 5;
+      else if (!strcmp(var.value, "1/6 Frame"))
+         Config.FrameRate = 6;
+      else if (!strcmp(var.value, "1/8 Frame"))
+         Config.FrameRate = 8;
+      else if (!strcmp(var.value, "1/16 Frame"))
+         Config.FrameRate = 16;
+      else if (!strcmp(var.value, "1/32 Frame"))
+         Config.FrameRate = 32;
+      else if (!strcmp(var.value, "1/60 Frame"))
+         Config.FrameRate = 60;
+      else if (!strcmp(var.value, "Full Frame"))
+         Config.FrameRate = 1;
+   }
 }
 
 void update_input(void)
