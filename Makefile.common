@@ -8,10 +8,12 @@ INCFLAGS := -I$(CORE_DIR) \
 SOURCES_C := $(CORE_DIR)/x68k/d68k.c \
 				 $(CORE_DIR)/m68000/m68000.c 
 
-ifdef CYCLONE
+ifeq ($(CYCLONE),1)
+FLAGS += -DHAVE_CYCLONE
 SOURCES_S := \
 				 $(CORE_DIR)/m68000/cyclone.s 
 else
+FLAGS += -DHAVE_C68K
 SOURCES_C += \
 				 $(CORE_DIR)/m68000/c68k/c68k.c \
 				 $(CORE_DIR)/m68000/c68k/c68kexec.c 

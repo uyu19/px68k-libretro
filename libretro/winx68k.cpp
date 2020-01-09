@@ -234,12 +234,11 @@ WinX68k_Reset(void)
 {
 	OPM_Reset();
 
-	#ifdef CYCLONE
-		m68000_reset();
+#if defined (HAVE_CYCLONE)
+	m68000_reset();
 	m68000_set_reg(M68K_A7, (IPL[0x30001]<<24)|(IPL[0x30000]<<16)|(IPL[0x30003]<<8)|IPL[0x30002]);
 	m68000_set_reg(M68K_PC, (IPL[0x30005]<<24)|(IPL[0x30004]<<16)|(IPL[0x30007]<<8)|IPL[0x30006]);
-
-	#else
+#elif defined (HAVE_C68K)
 	C68k_Reset(&C68K);
 /*
 	C68k_Set_Reg(&C68K, C68K_A7, (IPL[0x30001]<<24)|(IPL[0x30000]<<16)|(IPL[0x30003]<<8)|IPL[0x30002]);
@@ -247,7 +246,7 @@ WinX68k_Reset(void)
 */
 	C68k_Set_AReg(&C68K, 7, (IPL[0x30001]<<24)|(IPL[0x30000]<<16)|(IPL[0x30003]<<8)|IPL[0x30002]);
 	C68k_Set_PC(&C68K, (IPL[0x30005]<<24)|(IPL[0x30004]<<16)|(IPL[0x30007]<<8)|IPL[0x30006]);
-#endif
+#endif /* HAVE_C68K */
 
 	Memory_Init();
 	CRTC_Init();
@@ -441,31 +440,31 @@ void WinX68k_Exec(void)
 				  fprintf(fp, "A0:%08X A1:%08X A2:%08X A3:%08X A4:%08X A5:%08X A6:%08X A7:%08X SR:%04X\n", C68K.A[0], C68K.A[1], C68K.A[2], C68K.A[3], C68K.A[4], C68K.A[5], C68K.A[6], C68K.A[7], C68k_Get_Reg(&C68K, C68K_SR) >> 8/* regs.sr_high*/);
 					fprintf(fp, "<%04X> (%08X ->) %08X : %s\n", Memory_ReadW(C68k_Get_Reg(&C68K, C68K_PC)), oldpc, C68k_Get_Reg(&C68K, C68K_PC), buf);
 				}
-	#ifdef CYCLONE
-	oldpc = m68000_get_reg(M68K_PC);
+#if defined (HAVE_CYCLONE)
+				oldpc = m68000_get_reg(M68K_PC);
 				//* C68KICount = 1;
 				m68000_execute(1);
-	#else
+#elif defined (HAVE_C68K)
 				oldpc = C68k_Get_Reg(&C68K, C68K_PC);
 //				C68K.ICount = 1;
 //				C68k_Exec(&C68K, C68K.ICount);
 				C68k_Exec(&C68K, 1);
-#endif
+#endif /* HAVE_C68K */
 			}
 			fclose(fp);
 			usedclk = clk_line = HSYNC_CLK;
 			clk_count = clk_next;
 		}
 		else
-#endif
+#endif /* WIN68DEBUG */
 		{
 //			C68K.ICount = n;
 //			C68k_Exec(&C68K, C68K.ICount);
-	#ifdef CYCLONE
+#if defined (HAVE_CYCLONE)
 			m68000_execute(n);
-	#else
+#elif defined (HAVE_C68K)
 			C68k_Exec(&C68K, n);
-	#endif
+#endif /* HAVE_C68K */
 			m = (n-m68000_ICountBk);
 //			m = (n-C68K.ICount-m68000_ICountBk);			// clockspeed progress
 			ClkUsed += m*10;
