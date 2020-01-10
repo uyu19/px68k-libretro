@@ -1194,17 +1194,17 @@ void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
 		set_mcolor(0xffe0); // yellow
 		set_mlocateC(1, 4);
 		draw_str(waku_str);
-		for (i = 5; i < 12; i++) {
+		for (i = 5; i < 10; i++) {
 			set_mlocateC(1, i);
 			draw_str(waku2_str);
 		}
-		set_mlocateC(1, 12);
+		set_mlocateC(1, 10);
 		draw_str(waku3_str);
 	}
 
 	// アイテム/キーワード
 	set_mcolor(0xffff);
-	for (i = 0; i < 7; i++) {
+	for (i = 0; i < 5; i++) {
 		set_mlocateC(3, 5 + i);
 		if (menu_state == ms_key && i == (mkey_y - mkey_pos)) {
 			set_mcolor(0x0);
@@ -1219,7 +1219,7 @@ void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
 	// アイテム/現在値
 	set_mcolor(0xffff);
 	set_mbcolor(0x0);
-	for (i = 0; i < 7; i++) {
+	for (i = 0; i < 5; i++) {
 		if ((menu_state == ms_value || menu_state == ms_hwjoy_set)
 		    && i == (mkey_y - mkey_pos)) {
 			set_mcolor(0x0);
@@ -1264,20 +1264,20 @@ void WinDraw_DrawMenu(int menu_state, int mkey_pos, int mkey_y, int *mval_y)
 		// 下枠
 		set_mcolor(0x07ff); // cyan
 		set_mbcolor(0x0);
-		set_mlocateC(0, 13);
+		set_mlocateC(0, 11);
 		draw_str(swaku_str);
-		set_mlocateC(0, 14);
+		set_mlocateC(0, 12);
 		draw_str(swaku2_str);
 		//set_mlocateC(0, 15);
 		//draw_str(swaku2_str);
-		set_mlocateC(0, 15);
+		set_mlocateC(0, 13);
 		draw_str(swaku3_str);
 	}
 
 	// キャプション
 	set_mcolor(0xffff);
 	set_mbcolor(0x0);
-	set_mlocateC(2, 14);
+	set_mlocateC(2, 12);
 	draw_str(menu_item_desc[mkey_y]);
 	//if (menu_state == ms_value) {
 		//set_mlocateC(2, 15);
