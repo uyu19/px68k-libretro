@@ -248,7 +248,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "px68k_disk_path",
       "Save Disk Paths",
-      "When enabled, previously loaded disks paths will be saved for every drives, and then auto-loaded on startup. When disabled, FDD and HDD starts empty.",
+      "When enabled, previously loaded disks paths will be saved for every drive, and then auto-loaded on startup. When disabled, FDD and HDD starts empty.",
       {
          { "enabled",  NULL },
          { "disabled", NULL },
