@@ -141,7 +141,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "px68k_joy1_select",
       "P1 Joystick Select Mapping",
-      "Assigns a keyboard key to joypad's SELECT button since some games use these keys as the Start or Insect Coin buttons.",
+      "Assigns a keyboard key to joypad's SELECT button since some games use these keys as the Start or Insert Coin buttons.",
       {
          { "Default", NULL },
          { "XF1",     NULL },
@@ -160,7 +160,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "px68k_adpcm_vol",
       "ADPCM Volume",
-      "Sets the volume for the ADPCM sound channel.",
+      "Sets the volume of the ADPCM sound channel.",
       {
          { "0",  NULL },
          { "1",  NULL },
@@ -248,7 +248,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "px68k_disk_path",
       "Save Disk Paths",
-      "When enabled, saves the paths of the last loaded disks in drives and auto-loads them on startup. When disabled, FDD and HDD starts empty.",
+      "When enabled, previously loaded disks paths will be saved for every drives, and then auto-loaded on startup. When disabled, FDD and HDD starts empty.",
       {
          { "enabled",  NULL },
          { "disabled", NULL },
@@ -261,7 +261,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "px68k_joy_mouse",
       "Joy/Mouse",
-      "Select [Mouse] or [Joypad] to controls in-game mouse pointer.",
+      "Select [Mouse] or [Joypad] to control in-game mouse pointer.",
       {
          { "Mouse",    NULL},
          { "Joystick", NULL}, /* unimplemented yet */
@@ -272,7 +272,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "px68k_vbtn_swap",
       "VBtn Swap",
-      "When set to [enabled], swaps TRIG1 and TRIG2 buttons when a 2-button gamepad is selected.",
+      "Swaps TRIG1 and TRIG2 buttons when a 2-button gamepad is selected.",
       {
          { "TRIG1 TRIG2", NULL},
          { "TRIG2 TRIG1", NULL},
@@ -283,7 +283,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "px68k_no_wait_mode",
       "No Wait Mode",
-      "When set to [enabled], core runs as fast as possible. Can cause audio dysnc but useful if using fast-forward. Setting this [disabled] is recommended.",
+      "When set to [enabled], core runs as fast as possible. Can cause audio desync but allows fast-forward. Setting this [disabled] is recommended.",
       {
          { "disabled", NULL},
          { "enabled",  NULL},
@@ -294,7 +294,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "px68k_frameskip",
       "Frames Skip",
-      "Choose how much frames should be skipped to improve performance at the expense of visual smoothness.",
+      "Choose how many frames will be skipped to improve performance at the expense of visual smoothness.",
       {
          { "Full Frame",      NULL },
          { "1/2 Frame",       NULL },
