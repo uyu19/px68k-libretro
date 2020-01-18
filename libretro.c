@@ -764,11 +764,14 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      /* TODO: Only mouse is implemented */
+      int value = 0;
       if (!strcmp(var.value, "Joystick"))
-         Config.JoyOrMouse = 0;
+         value = 0;
       else if (!strcmp(var.value, "Mouse"))
-         Config.JoyOrMouse = 1;
+         value = 1;
+
+      Config.JoyOrMouse = value;
+      Mouse_StartCapture(value == 1);
    }
 
    var.key = "px68k_vbtn_swap";
