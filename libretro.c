@@ -54,7 +54,7 @@ int retroh = 600;
 int CHANGEAV = 0;
 int CHANGEAV_TIMING = 0; /* Separate change of geometry from change of refresh rate */
 int VID_MODE = 1;
-float FRAMERATE = MODE_HIGH;
+float FRAMERATE = MODE_NORM;
 int JOY_TYPE[2] = {0}; /* Set controller type for each player to use */
 int clockmhz = 10;
 DWORD ram_size;
