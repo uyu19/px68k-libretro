@@ -86,7 +86,7 @@ bool set_eject_state(bool ejected)
    if (ejected)
    {
       FDD_EjectFD(disk_drive);
-		Config.FDDImage[disk_drive][0] = '\0';
+      Config.FDDImage[disk_drive][0] = '\0';
    }
    disk_inserted = !ejected;
    return true;
