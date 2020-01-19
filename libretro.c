@@ -11,6 +11,7 @@
 #include "libretro/dswin.h"
 #include "libretro/keyboard.h"
 #include "libretro/prop.h"
+#include "libretro/mouse.h"
 #include "fmgen/fmg_wrap.h"
 #include "x68k/adpcm.h"
 #include "x68k/fdd.h"
