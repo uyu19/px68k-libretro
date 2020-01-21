@@ -61,8 +61,6 @@ int clockmhz = 10;
 DWORD ram_size;
 DWORD libretro_supports_input_bitmasks = 0;
 
-int pauseg = 0;
-
 static signed short soundbuf[1024 * 2];
 static int soundbuf_size;
 
@@ -954,7 +952,6 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info *i
 
 void retro_unload_game(void)
 {
-   pauseg = 0;
 }
 
 unsigned retro_get_region(void)
@@ -1102,10 +1099,6 @@ void retro_run(void)
    }
 
    input_poll_cb();
-
-   if(pauseg != -1)
-   {
-   }
 
    exec_app_retro();
    
