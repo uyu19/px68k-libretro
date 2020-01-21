@@ -79,23 +79,52 @@ struct retro_disk_control_callback dskcb;
 unsigned disk_index = 0;
 unsigned disk_images = 0;
 char disk_paths[10][MAX_PATH];
-bool disk_inserted = false;
+bool disk_inserted[2] = { false, false };
 unsigned disk_drive = 1;
+
+static void update_disk_drive_swap(void)
+{
+   struct retro_variable var =
+   {
+      "px68k_disk_drive",
+      NULL
+   };
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "FDD0") == 0)
+         disk_drive = 0;
+      else
+         disk_drive = 1;
+   }
+}
 
 bool set_eject_state(bool ejected)
 {
+   if(disk_index == disk_images)
+   {
+      //retroarch is trying to set "no disk in tray"
+      return true;
+   }
+
    if (ejected)
    {
       FDD_EjectFD(disk_drive);
       Config.FDDImage[disk_drive][0] = '\0';
    }
-   disk_inserted = !ejected;
+   else
+   {
+      strcpy(Config.FDDImage[disk_drive], disk_paths[disk_index]);
+      FDD_SetFD(disk_drive, Config.FDDImage[disk_drive], 0);
+   }
+   disk_inserted[disk_drive] = !ejected;
    return true;
 }
 
 bool get_eject_state(void)
 {
-   return !disk_inserted;
+   update_disk_drive_swap();
+   return !disk_inserted[disk_drive];
 }
 
 unsigned get_image_index(void)
@@ -106,15 +135,6 @@ unsigned get_image_index(void)
 bool set_image_index(unsigned index)
 {
    disk_index = index;
-   if(disk_index == disk_images)
-   {
-      //retroarch is trying to set "no disk in tray"
-      return true;
-   }
-
-   update_variables();
-   FDD_SetFD(disk_drive, disk_paths[disk_index], 0);
-   strcpy(Config.FDDImage[disk_drive], disk_paths[disk_index]);
    return true;
 }
 
@@ -284,6 +304,7 @@ int pre_main(const char *argv)
 {
    int i = 0;
    int Only1Arg;
+   int isM3U = 0;
 
    for (i = 0; i < 64; i++)
       xargv_cmd[i] = NULL;
@@ -311,8 +332,10 @@ int pre_main(const char *argv)
          if(disk_images > 1)
          {
             sprintf((char*)argv, "%s \"%s\"", argv, disk_paths[1]);
+            disk_inserted[1] = true;
          }
-         disk_inserted = true;
+         disk_inserted[0] = true;
+         isM3U = 1;
          attach_disk_swap_interface();
       }
    }
@@ -358,6 +381,19 @@ int pre_main(const char *argv)
    {
       xargv_cmd[i] = (char*)(XARGV[i]);
    }
+
+   /* Log successfully loaded paths when loading from m3u */
+   if (isM3U)
+   {
+      p6logd("%s\n", "Loading from an m3u file ...");
+      for (i = 0; i < disk_images; i++)
+         p6logd("index %d: %s\n", i + 1, disk_paths[i]);
+   }
+
+   /* List arguments to be passed to core */
+   p6logd("%s\n", "Parsing arguments ...");
+   for (i = 0; i < PARAMCOUNT; i++)
+      p6logd("%d : %s\n", i, xargv_cmd[i]);
 
 run_pmain:
    pmain(PARAMCOUNT, (char **)xargv_cmd);
@@ -698,16 +734,7 @@ static void update_variables(void)
    }
 #endif
 
-   var.key = "px68k_disk_drive";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      if (strcmp(var.value, "FDD0") == 0)
-         disk_drive = 0;
-      else
-         disk_drive = 1;
-   }
+   update_disk_drive_swap();
 
    var.key = "px68k_menufontsize";
    var.value = NULL;
