@@ -63,7 +63,8 @@ DWORD libretro_supports_input_bitmasks = 0;
 
 int pauseg = 0;
 
-signed short soundbuf[1024 * 2];
+static signed short soundbuf[1024 * 2];
+static int soundbuf_size;
 
 uint16_t *videoBuffer;
 
@@ -1073,6 +1074,7 @@ void retro_run(void)
       firstcall = 0;
       p6logd("INIT done\n");
       update_variables();
+      soundbuf_size = SNDSZ;
       return;
    }
 
@@ -1089,6 +1091,7 @@ void retro_run(void)
          update_geometry();
          CHANGEAV = 0;
       }
+      soundbuf_size = SNDSZ;
       p6logd("w:%d h:%d a:%.3f\n", retrow, retroh, (float)(4.0/3.0));
       p6logd("fps:%.2f soundrate:%d\n", FRAMERATE, (int)SOUNDRATE);
    }
@@ -1105,8 +1108,9 @@ void retro_run(void)
    }
 
    exec_app_retro();
-
-   raudio_callback(NULL, NULL, SNDSZ * 4);
+   
+   raudio_callback(soundbuf, NULL, soundbuf_size << 2);
+   audio_batch_cb((const int16_t*)soundbuf, soundbuf_size);
 
    video_cb(videoBuffer, retrow, retroh, /*retrow*/ 800 << 1/*2*/);
 }
