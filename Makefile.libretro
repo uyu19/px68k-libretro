@@ -47,44 +47,57 @@ TARGET_NAME := px68k
 ENDIANNESS_DEFINES :=
 CORE_DIR := .
 
+# Unix
 ifneq (,$(findstring unix,$(platform)))
-	CFLAGS += -g -O2 
-	CXXFLAGS += -g -O2  -fno-merge-constants 
+	CFLAGS += -g -O2
+	CXXFLAGS += -g -O2  -fno-merge-constants
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
 	FLAGS += -D__LINUX__
-else ifneq (,$(findstring osx,$(platform)))
-	TARGET := $(TARGET_NAME)_libretro.dylib
-	fpic = -fPIC
-   SHARED := -dynamiclib
 
+# OS X
+else ifeq ($(platform), osx)
+   	TARGET := $(TARGET_NAME)_libretro.dylib
+   	fpic := -fPIC
+   	SHARED := -dynamiclib
+   	ifeq ($(arch),ppc)
+      	ENDIANNESS_DEFINES := -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
+      	OLD_GCC := 1
+   	endif
+   	OSXVER = `sw_vers -productVersion | cut -d. -f 2`
+   	OSX_LT_MAVERICKS = `(( $(OSXVER) <= 9)) && echo "YES"`
+   	fpic += -mmacosx-version-min=10.7
+   	CXXFLAGS += -stdlib=libc++
+   	LDFLAGS += -stdlib=libc++
+
+# iOS
 else ifneq (,$(findstring ios,$(platform)))
 	TARGET := $(TARGET_NAME)_libretro_ios.dylib
 	fpic = -fPIC
 	SHARED := -dynamiclib
 
-ifeq ($(IOSSDK),)
-   IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
-endif
+	ifeq ($(IOSSDK),)
+   		IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
+	endif
 
 	DEFINES := -DIOS
 
-ifeq ($(platform),ios-arm64)
-   CC = clang -arch arm64 -isysroot $(IOSSDK)
-   CXX = clang++ -arch arm64 -isysroot $(IOSSDK)
-else
-   CC = clang -arch armv7 -isysroot $(IOSSDK)
-   CXX = clang++ -arch armv7 -isysroot $(IOSSDK)
-endif
+	ifeq ($(platform),ios-arm64)
+   		CC = clang -arch arm64 -isysroot $(IOSSDK)
+   		CXX = clang++ -arch arm64 -isysroot $(IOSSDK)
+	else
+   		CC = clang -arch armv7 -isysroot $(IOSSDK)
+   		CXX = clang++ -arch armv7 -isysroot $(IOSSDK)
+	endif
 
-ifeq ($(platform),$(filter $(platform),ios9 ios-arm64))
-	CC += -miphoneos-version-min=8.0
-	CXXFLAGS += -miphoneos-version-min=8.0
-else
-	CC += -miphoneos-version-min=5.0
-	CXXFLAGS += -miphoneos-version-min=5.0
-endif
+	ifeq ($(platform),$(filter $(platform),ios9 ios-arm64))
+		CC += -miphoneos-version-min=8.0
+		CXXFLAGS += -miphoneos-version-min=8.0
+	else
+		CC += -miphoneos-version-min=5.0
+		CXXFLAGS += -miphoneos-version-min=5.0
+	endif
 
 # tvOS
 else ifeq ($(platform), tvos-arm64)
@@ -92,31 +105,31 @@ else ifeq ($(platform), tvos-arm64)
 	fpic = -fPIC
 	SHARED := -dynamiclib
 
-ifeq ($(IOSSDK),)
-   IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
-endif
+	ifeq ($(IOSSDK),)
+   		IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
+	endif
 
 	DEFINES := -DIOS
 
-
-	# android arm
+# android arm
 else ifneq (,$(findstring android,$(platform)))
 	TARGET := $(TARGET_NAME)_libretro_android.so
 	fpic = -fPIC
 	SHARED := -lstdc++ -llog -shared -Wl,--version-script=link.T -Wl,--no-undefined
 	CFLAGS +=  -g -O2
-	CXXFLAGS = -g -O2  -fno-merge-constants 
+	CXXFLAGS = -g -O2  -fno-merge-constants
 	CC = arm-linux-androideabi-gcc
 	CXX = arm-linux-androideabi-g++
 	FLAGS += -D__LINUX__ -DARM -marm
-	# crosspi arm
+
+# crosspi arm
 else ifneq (,$(findstring crosspi,$(platform)))
 	CC = arm-linux-gnueabihf-gcc
 	CXX = arm-linux-gnueabihf-g++
 	CC_AS = arm-linux-gnueabihf-as
 	CPU_FLAGS += -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard
-	CFLAGS += -g -O2 
-	CXXFLAGS += -g -O2  -fno-merge-constants 
+	CFLAGS += -g -O2
+	CXXFLAGS += -g -O2  -fno-merge-constants
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
@@ -132,13 +145,13 @@ else ifeq ($(platform), libnx)
 	CXXFLAGS += -fno-rtti -fno-exceptions
 	EXTRA_LDF += -Wl,--allow-multiple-definition
 	STATIC_LINKING := 1
-	
+
 # Classic Platforms ####################
 # Platform affix = classic_<ISA>_<µARCH>
 # Help at https://modmyclassic.com/comp
 
-# (armv7 a7, hard point, neon based) ### 
-# NESC, SNESC, C64 mini 
+# (armv7 a7, hard point, neon based) ###
+# NESC, SNESC, C64 mini
 else ifeq ($(platform), classic_armv7_a7)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
@@ -165,14 +178,14 @@ else ifeq ($(platform), classic_armv7_a7)
 	endif
 #######################################
 
-	# cross Windows
+# cross Windows
 else ifeq ($(platform), wincross64)
 	TARGET := $(TARGET_NAME)_libretro.dll
 	AR = x86_64-w64-mingw32-ar
 	CC = x86_64-w64-mingw32-gcc
-	CXX = x86_64-w64-mingw32-g++ 
+	CXX = x86_64-w64-mingw32-g++
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
-	LDFLAGS += -static-libgcc -static-libstdc++ 
+	LDFLAGS += -static-libgcc -static-libstdc++
 	EXTRA_LDF := -lwinmm -Wl,--export-all-symbols
 
 # Windows MSVC 2017 all architectures
@@ -263,7 +276,7 @@ else ifneq (,$(findstring windows_msvc2017,$(platform)))
 	ifneq (,$(findstring uwp,$(PlatformSuffix)))
 		LIB := $(LIB);$(shell IFS=$$'\n'; cygpath -w "$(LIB)/store")
 	endif
-    
+
 	export INCLUDE := $(INCLUDE);$(WindowsSDKSharedIncludeDir);$(WindowsSDKUCRTIncludeDir);$(WindowsSDKUMIncludeDir)
 	export LIB := $(LIB);$(WindowsSDKUCRTLibDir);$(WindowsSDKUMLibDir)
 	TARGET := $(TARGET_NAME)_libretro.dll
@@ -299,28 +312,30 @@ else ifneq (,$(findstring armv,$(platform)))
 		ASFLAGS += -mfloat-abi=hard
 	endif
 	CFLAGS += -DARM
+
+# Windows
 else
 	TARGET :=  $(TARGET_NAME)_libretro.dll
 	CC ?= gcc
 	CXX ?= g++
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
-	LDFLAGS += -static-libgcc -static-libstdc++ 
+	LDFLAGS += -static-libgcc -static-libstdc++
 	EXTRA_LDF = -lwinmm -Wl,--export-all-symbols
 endif
 
-CDEBUGFLAGS+= -DNO_MERCURY
-CDEBUGFLAGS+= -DPX68K_VERSION=\"0.15+\" -DGIT_VERSION=\"$(GIT_VERSION)\"
-FLAGS += $(CDEBUGFLAGS)
+CDEBUGFLAGS	+= -DNO_MERCURY
+CDEBUGFLAGS	+= -DPX68K_VERSION=\"0.15+\" -DGIT_VERSION=\"$(GIT_VERSION)\"
+FLAGS 		+= $(CDEBUGFLAGS)
 
 include $(CORE_DIR)/Makefile.common
 
 OBJECTS := $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o) $(SOURCES_S:.s=.o)
 
 OBJOUT   = -o
-LINKOUT  = -o 
+LINKOUT  = -o
 
 ifneq (,$(findstring msvc,$(platform)))
-	OBJOUT = -Fo
+	OBJOUT  = -Fo
 	LINKOUT = -out:
 ifeq ($(STATIC_LINKING),1)
 	LD ?= lib.exe
@@ -342,16 +357,16 @@ else
    FLAGS += -O3 -ffast-math -fomit-frame-pointer
 endif
 
-LDFLAGS +=  $(fpic) $(SHARED) $(EXTRA_LDF) 
-FLAGS   += $(INCFLAGS) 
-FLAGS += -DC68K_NO_JUMP_TABLE
+LDFLAGS +=  $(fpic) $(SHARED) $(EXTRA_LDF)
+FLAGS   += $(INCFLAGS)
+FLAGS   += -DC68K_NO_JUMP_TABLE
 
-WARNINGS :=  
+WARNINGS :=
 
-FLAGS += -D__LIBRETRO__ $(ENDIANNESS_DEFINES) $(WARNINGS) $(fpic) 
+FLAGS    += -D__LIBRETRO__ $(ENDIANNESS_DEFINES) $(WARNINGS) $(fpic)
 
-CXXFLAGS += $(FLAGS) $(CPU_FLAGS) -fpermissive 
-CFLAGS += $(FLAGS) -std=gnu99 $(CPU_FLAGS)
+CXXFLAGS += $(FLAGS) $(CPU_FLAGS) -fpermissive
+CFLAGS   += $(FLAGS) -std=gnu99 $(CPU_FLAGS)
 
 $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
