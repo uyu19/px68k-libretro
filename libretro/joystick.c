@@ -36,8 +36,6 @@ BYTE MouseUpState0;
 
 BYTE JoyPortData[2];
 
-extern bool joypad1, joypad2;
-
 int *r_joy;
 
 void Joystick_Init(void)

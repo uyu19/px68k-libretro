@@ -35,10 +35,10 @@ char slash = '/';
 #define SOUNDRATE 44100.0
 #define SNDSZ round(SOUNDRATE / FRAMERATE)
 
-char RPATH[512];
-char RETRO_DIR[512];
-const char *retro_save_directory;
-const char *retro_system_directory;
+static char RPATH[512];
+static char RETRO_DIR[512];
+static const char *retro_save_directory;
+static const char *retro_system_directory;
 const char *retro_content_directory;
 char retro_system_conf[512];
 char base_dir[MAX_PATH];
@@ -46,9 +46,9 @@ char base_dir[MAX_PATH];
 char Core_Key_State[512];
 char Core_old_Key_State[512];
 
-bool joypad1, joypad2;
+static bool joypad1, joypad2;
 
-bool opt_analog;
+static bool opt_analog;
 
 int retrow = 800;
 int retroh = 600;
@@ -76,11 +76,11 @@ static void update_variables(void);
 
 /* .dsk swap support */
 struct retro_disk_control_callback dskcb;
-unsigned disk_index = 0;
-unsigned disk_images = 0;
-char disk_paths[10][MAX_PATH];
-bool disk_inserted[2] = { false, false };
-unsigned disk_drive = 1;
+static unsigned disk_index = 0;
+static unsigned disk_images = 0;
+static char disk_paths[10][MAX_PATH];
+static bool disk_inserted[2] = { false, false };
+static unsigned disk_drive = 1;
 
 static void update_disk_drive_swap(void)
 {
