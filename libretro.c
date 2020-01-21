@@ -56,9 +56,6 @@ int CHANGEAV = 0;
 int CHANGEAV_TIMING = 0; /* Separate change of geometry from change of refresh rate */
 int VID_MODE = 1;
 float FRAMERATE = MODE_NORM;
-int JOY_TYPE[2] = {0}; /* Set controller type for each player to use */
-int clockmhz = 10;
-DWORD ram_size;
 DWORD libretro_supports_input_bitmasks = 0;
 
 static signed short soundbuf[1024 * 2];
@@ -608,11 +605,11 @@ static void update_variables(void)
       var.value = NULL;
       if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
          if (!(strcmp(var.value, "Default (2 Buttons)"))) {
-            JOY_TYPE[i] = 0;
+            Config.JOY_TYPE[i] = 0;
          } else if (!(strcmp(var.value, "CPSF-MD (8 Buttons)"))) {
-            JOY_TYPE[i] = 1;
+            Config.JOY_TYPE[i] = 1;
          } else if (!(strcmp(var.value, "CPSF-SFC (8 Buttons)"))) {
-            JOY_TYPE[i] = 2;
+            Config.JOY_TYPE[i] = 2;
          }
       }
    }
@@ -623,21 +620,21 @@ static void update_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "10Mhz") == 0)
-         clockmhz = 10;
+         Config.clockmhz = 10;
       else if (strcmp(var.value, "16Mhz") == 0)
-         clockmhz = 16;
+         Config.clockmhz = 16;
       else if (strcmp(var.value, "25Mhz") == 0)
-         clockmhz = 25;
+         Config.clockmhz = 25;
       else if (strcmp(var.value, "33Mhz (OC)") == 0)
-         clockmhz = 33;
+         Config.clockmhz = 33;
       else if (strcmp(var.value, "66Mhz (OC)") == 0)
-         clockmhz = 66;
+         Config.clockmhz = 66;
       else if (strcmp(var.value, "100Mhz (OC)") == 0)
-         clockmhz = 100;
+         Config.clockmhz = 100;
       else if (strcmp(var.value, "150Mhz (OC)") == 0)
-         clockmhz = 150;
+         Config.clockmhz = 150;
       else if (strcmp(var.value, "200Mhz (OC)") == 0)
-         clockmhz = 200;
+         Config.clockmhz = 200;
    }
 
    var.key = "px68k_ramsize";
@@ -645,32 +642,33 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
+      int value = 0;
       if (strcmp(var.value, "1MB") == 0)
-         ram_size = 1;
+         value = 1;
       else if (strcmp(var.value, "2MB") == 0)
-         ram_size = 2;
+         value = 2;
       else if (strcmp(var.value, "3MB") == 0)
-         ram_size = 3;
+         value = 3;
       else if (strcmp(var.value, "4MB") == 0)
-         ram_size = 4;
+         value = 4;
       else if (strcmp(var.value, "5MB") == 0)
-         ram_size = 5;
+         value = 5;
       else if (strcmp(var.value, "6MB") == 0)
-         ram_size = 6;
+         value = 6;
       else if (strcmp(var.value, "7MB") == 0)
-         ram_size = 7;
+         value = 7;
       else if (strcmp(var.value, "8MB") == 0)
-         ram_size = 8;
+         value = 8;
       else if (strcmp(var.value, "9MB") == 0)
-         ram_size = 9;
+         value = 9;
       else if (strcmp(var.value, "10MB") == 0)
-         ram_size = 10;
+         value = 10;
       else if (strcmp(var.value, "11MB") == 0)
-         ram_size = 11;
+         value = 11;
       else if (strcmp(var.value, "12MB") == 0)
-         ram_size = 12;
+         value = 12;
 
-      ram_size <<= 20; /* convert to bytes */
+      Config.ram_size = (value * 1024 * 1024);
    }
 
    var.key = "px68k_analog";
@@ -1040,6 +1038,10 @@ void retro_init(void)
 
    /* set sane defaults */
    Config.disk_path = 1;
+   Config.clockmhz = 10;
+   Config.ram_size = 2 * 1024 *1024;
+   Config.JOY_TYPE[0] = 0;
+   Config.JOY_TYPE[1] = 0;
 
    update_variables();
 
