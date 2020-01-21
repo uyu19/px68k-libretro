@@ -185,7 +185,7 @@ void retro_set_input_state(retro_input_state_t cb) { input_state_cb = cb; }
 
 static char CMDFILE[512];
 
-int loadcmdfile(char *argv)
+static int loadcmdfile(char *argv)
 {
    int res = 0;
 
@@ -201,7 +201,7 @@ int loadcmdfile(char *argv)
    return res;
 }
 
-int HandleExtension(char *path, char *ext)
+static int HandleExtension(char *path, char *ext)
 {
    int len = strlen(path);
 
@@ -223,11 +223,11 @@ static unsigned char ARGUC = 0;
 // Args for Core
 static char XARGV[64][1024];
 static const char* xargv_cmd[64];
-int PARAMCOUNT = 0;
+static int PARAMCOUNT = 0;
 
 extern int cmain(int argc, char *argv[]);
 
-void parse_cmdline(const char *argv);
+static void parse_cmdline(const char *argv);
 
 static void extract_directory(char *buf, const char *path, size_t size)
 {
@@ -287,7 +287,7 @@ static bool read_m3u(const char *file)
    return (disk_images != 0);
 }
 
-void Add_Option(const char* option)
+static void Add_Option(const char* option)
 {
    static int first = 0;
 
@@ -300,7 +300,7 @@ void Add_Option(const char* option)
    sprintf(XARGV[PARAMCOUNT++], "%s\0", option);
 }
 
-int pre_main(const char *argv)
+static int pre_main(const char *argv)
 {
    int i = 0;
    int Only1Arg;
@@ -404,7 +404,7 @@ run_pmain:
    return 0;
 }
 
-void parse_cmdline(const char *argv)
+static void parse_cmdline(const char *argv)
 {
    char *p, *p2, *start_of_word;
    int c, c2;
@@ -462,11 +462,6 @@ void parse_cmdline(const char *argv)
    }
 }
 
-void texture_init(void)
-{
-   memset(videoBuffer, 0, sizeof(*videoBuffer));
-}
-
 static struct retro_input_descriptor inputDescriptors[64];
 
 static struct retro_input_descriptor inputDescriptorsP1[] = {
@@ -512,7 +507,7 @@ static struct retro_input_descriptor inputDescriptorsNull[] = {
 };
 
 
-void retro_set_controller_descriptors()
+static void retro_set_controller_descriptors()
 {
    unsigned i;
    unsigned size = 16;
@@ -854,18 +849,6 @@ static void update_variables(void)
    }
 }
 
-void update_input(void)
-{
-  input_poll_cb();
-}
-
-
-#if 0
-static void keyboard_cb(bool down, unsigned keycode, uint32_t character, uint16_t mod)
-{
-}
-#endif
-
 /************************************
  * libretro implementation
  ************************************/
@@ -1115,7 +1098,7 @@ void retro_run(void)
       update_variables();
    }
 
-   update_input();
+   input_poll_cb();
 
    if(pauseg != -1)
    {
