@@ -92,11 +92,8 @@ static int ClkUsed = 0;
 static int FrameSkipCount = 0;
 static int FrameSkipQueue = 0;
 
-extern DWORD ram_size;
-extern int clockmhz;
-
-DWORD old_ram_size = 0;
-int old_clkdiv = 0;
+static DWORD old_ram_size = 0;
+static int old_clkdiv = 0;
 
 #ifdef __cplusplus
 };
@@ -333,9 +330,9 @@ void WinX68k_Exec(void)
 	int KeyIntCnt = 0, MouseIntCnt = 0;
 	DWORD t_start = timeGetTime(), t_end;
 
-	if(!(Memory_ReadD(0xed0008)==ram_size)){
+	if(!(Memory_ReadD(0xed0008)==Config.ram_size)){
 		Memory_WriteB(0xe8e00d, 0x31);             // SRAM write permission
-		Memory_WriteD(0xed0008, ram_size);         // Define RAM amount
+		Memory_WriteD(0xed0008, Config.ram_size);         // Define RAM amount
 	}
 
 	Joystick_Update(FALSE, -1, 0);
@@ -364,8 +361,8 @@ void WinX68k_Exec(void)
 	clk_count = -ICount;
 	clk_total = (CRTC_Regs[0x29] & 0x10) ? VSYNC_HIGH : VSYNC_NORM;
 
-	clk_total = (clk_total*clockmhz)/10;
-	clkdiv = clockmhz;
+	clk_total = (clk_total*Config.clockmhz)/10;
+	clkdiv = Config.clockmhz;
 
 //	if (Config.XVIMode == 1) {
 //		clk_total = (clk_total*16)/10;
@@ -377,11 +374,11 @@ void WinX68k_Exec(void)
 //		clkdiv = 10;
 //	}
 
-	if(clkdiv != old_clkdiv || ram_size != old_ram_size){
+	if(clkdiv != old_clkdiv || Config.ram_size != old_ram_size){
 		p6logd("CPU Clock: %d%s\n",clkdiv,"MHz");
-		p6logd("RAM Size: %ld%s\n",ram_size/1000000,"MB");
+		p6logd("RAM Size: %ld%s\n",Config.ram_size/1000000,"MB");
 		old_clkdiv = clkdiv;
-		old_ram_size = ram_size;
+		old_ram_size = Config.ram_size;
 	}
 
 	ICount += clk_total;

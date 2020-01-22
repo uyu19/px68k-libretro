@@ -8,7 +8,6 @@
 
 #include "libretro.h"
 extern retro_input_state_t input_state_cb;
-extern int JOY_TYPE[2];
 extern DWORD libretro_supports_input_bitmasks;
 
 #ifndef MAX_BUTTON
@@ -35,8 +34,6 @@ BYTE JoyUpState0;
 BYTE MouseUpState0;
 
 BYTE JoyPortData[2];
-
-extern bool joypad1, joypad2;
 
 int *r_joy;
 
@@ -132,7 +129,7 @@ void FASTCALL Joystick_Update(int is_menu, int key, int port)
 	if (res & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN))	ret0 ^= JOY_DOWN;
 
 	/* Buttons */
-	switch (JOY_TYPE[port]) {
+	switch (Config.JOY_TYPE[port]) {
 	case PAD_2BUTTON:
 		if (res & (1 << RETRO_DEVICE_ID_JOYPAD_A))	ret0 ^= (Config.VbtnSwap ? JOY_TRG1 : JOY_TRG2);
 		if (res & (1 << RETRO_DEVICE_ID_JOYPAD_B))	ret0 ^= (Config.VbtnSwap ? JOY_TRG2 : JOY_TRG1);

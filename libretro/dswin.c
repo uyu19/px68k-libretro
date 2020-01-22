@@ -31,10 +31,6 @@
 #include	"mercury.h"
 #include	"fmg_wrap.h"
 
-#include "libretro.h"
-extern retro_audio_sample_batch_t audio_batch_cb;
-extern signed short soundbuf[1024*2];
-
 short	playing = FALSE;
 
 #define PCMBUF_SIZE 2*2*48000
@@ -223,11 +219,7 @@ cb_start:
          //printf("TYPED: ");
       }
    }
-
-   signed short int *ptr=(signed short int *)buf;
-   memcpy(&soundbuf[0],buf,len);
-   audio_batch_cb(soundbuf,len/4);
-
+   memcpy(userdata, buf, len);
 }
 
 #else	/* NOSOUND */
