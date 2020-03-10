@@ -114,6 +114,7 @@ void FASTCALL Joystick_Update(int is_menu, int key, int port)
 {
 	BYTE ret0 = 0xff, ret1 = 0xff;
 	BYTE mret0 = 0xff, mret1 = 0xff;
+	BYTE temp = 0;
 	static BYTE pre_ret0 = 0xff, pre_mret0 = 0xff;
 	DWORD res = 0;
 
@@ -123,10 +124,17 @@ void FASTCALL Joystick_Update(int is_menu, int key, int port)
 		res = get_px68k_input(port);
 
 	/* D-Pad */
-	if (res & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT))	ret0 ^= JOY_RIGHT;
-	if (res & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT))	ret0 ^= JOY_LEFT;
-	if (res & (1 << RETRO_DEVICE_ID_JOYPAD_UP))		ret0 ^= JOY_UP;
-	if (res & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN))	ret0 ^= JOY_DOWN;
+	if (res & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT))	temp |= JOY_RIGHT;
+	if (res & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT))	temp |=  JOY_LEFT;
+	if (res & (1 << RETRO_DEVICE_ID_JOYPAD_UP))		temp |=  JOY_UP;
+	if (res & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN))	temp |=  JOY_DOWN;
+
+	if ((temp & (JOY_LEFT | JOY_RIGHT)) == (JOY_LEFT | JOY_RIGHT))
+		temp &= ~(JOY_LEFT | JOY_RIGHT);
+	if ((temp & (JOY_UP | JOY_DOWN)) == (JOY_UP | JOY_DOWN))
+		temp &= ~(JOY_UP | JOY_DOWN);
+
+	ret0 ^= temp;
 
 	/* Buttons */
 	switch (Config.JOY_TYPE[port]) {
