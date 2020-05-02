@@ -312,7 +312,15 @@ else ifneq (,$(findstring armv,$(platform)))
 		ASFLAGS += -mfloat-abi=hard
 	endif
 	CFLAGS += -DARM
-
+# QNX
+else ifeq ($(platform), qnx)
+	EXT?=so
+	TARGET := $(TARGET_NAME)_libretro_$(platform).$(EXT)
+	fpic := -fPIC
+	SHARED := -shared -Wl,--no-undefined
+	CC = qcc -Vgcc_ntoarmv7le
+	CXX = QCC -Vgcc_ntoarmv7le
+	LDFLAGS += -lm
 # Windows
 else
 	TARGET :=  $(TARGET_NAME)_libretro.dll
