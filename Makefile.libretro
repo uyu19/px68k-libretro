@@ -134,7 +134,14 @@ else ifneq (,$(findstring crosspi,$(platform)))
 	fpic := -fPIC
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
 	FLAGS += -D__LINUX__ -DARM -marm
-
+else ifeq ($(platform), vita)
+	TARGET := $(TARGET_NAME)_libretro_vita.a
+	CC = arm-vita-eabi-gcc
+	CXX = arm-vita-eabi-g++
+	AR = arm-vita-eabi-ar
+	FLAGS += -DVITA=1
+	CXXFLAGS += -Wl,-q -Wall -O2
+	STATIC_LINKING = 1
 # Nintendo Switch (libnx)
 else ifeq ($(platform), libnx)
 	include $(DEVKITPRO)/libnx/switch_rules
