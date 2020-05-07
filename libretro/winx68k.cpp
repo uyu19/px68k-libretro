@@ -572,6 +572,11 @@ int menu_mode = menu_out;
 #ifdef  __cplusplus
 };
 #endif
+//------------------------------------------
+//------------------------------------------
+// pmainがcoreのエントリポイントっぽい
+//------------------------------------------
+//------------------------------------------
 extern "C" int pmain(int argc, char *argv[])
 {
 
@@ -686,8 +691,13 @@ extern "C" int pmain(int argc, char *argv[])
 			strcpy(Config.FDDImage[0], argv[1]);
 			break;
 		case 0:
+			
 			// start menu when running without content
-			menu_mode = menu_enter;
+
+			if( ( Config.FDDImage[ 0 ][ 0 ] | Config.FDDImage[ 0 ][ 1 ] | Config.HDImage[ 0 ][ 0 ] | Config.HDImage[ 1 ][ 0 ] ) == '\0' )
+			{
+				menu_mode = menu_enter;
+			}
 		}
 	}
 
@@ -876,128 +886,191 @@ extern "C" void handle_retrok(){
 	KEYP(RETROK_RALT,0x73);
 
 }
+//*********************************************
+//
+// void exec_app_retro( void )
+//
+// libretroから毎フレーム呼ばれるretro_runの中で呼ばれてる関数
+//
+// X68Kのエミュレーションのメイン処理はここ
+//
+//*********************************************
+extern "C" void exec_app_retro( void )
+{
 
-extern "C" void exec_app_retro(){
+	int menu_key_down = -1;
 
-	int menu_key_down;
-	//while (1) {
-		// OPM_RomeoOut(Config.BufferSize * 5);
-		if (menu_mode == menu_out
-		    && (Config.NoWaitMode || Timer_GetCount())) {
-			WinX68k_Exec();
+	// OPM_RomeoOut(Config.BufferSize * 5);
 
-			if (SplashFlag) {
-				SplashFlag--;
-				if (SplashFlag == 0)
-					WinDraw_HideSplash();
+	if( menu_mode == menu_out && (Config.NoWaitMode || Timer_GetCount()) )
+	{
+		WinX68k_Exec();
+
+		if( SplashFlag )
+		{
+			SplashFlag--;
+
+			if( SplashFlag == 0 )
+			{
+				WinDraw_HideSplash();
 			}
 		}
+	}
 
-		menu_key_down = -1;
- 		//end_loop=1;
+	static int mbL = 0, mbR = 0;
 
-		static int mbL = 0, mbR = 0;
+	int mouse_x = input_state_cb( 0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X );
+	int mouse_y = input_state_cb( 0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y );
 
-	      	int mouse_x = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
-		int mouse_y = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
+	Mouse_Event( 0, mouse_x, mouse_y );
 
-     		Mouse_Event(0, mouse_x, mouse_y);
+	int mouse_l = input_state_cb( 0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT );
+	int mouse_r = input_state_cb( 0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT );
 
-		int mouse_l    = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
-		int mouse_r    = input_state_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
+	// 
 
-  	        if(mbL==0 && mouse_l){
-      			mbL=1;
-			Mouse_Event(1,1.0,0);
+	if( mbL == 0 && mouse_l )
+	{
+		mbL = 1;
+
+		Mouse_Event( 1, 1.0, 0 );
+	}
+	else if( mbL == 1 && !mouse_l )
+	{
+		mbL = 0;
+
+		Mouse_Event( 1, 0, 0 );
+	}
+
+	if( mbR == 0 && mouse_r )
+	{
+		mbR = 1;
+
+		Mouse_Event( 2, 1.0, 0 );
+	}
+	else if( mbR == 1 && !mouse_r )
+	{
+		mbR = 0;
+
+		Mouse_Event(2,0,0);
+	}
+
+	int i;
+
+	for( i = 0; i < 320; i++ )
+	{
+		Core_Key_State[ i ] = input_state_cb( 0, RETRO_DEVICE_KEYBOARD, 0, i ) ? 0x80 : 0;
+	}
+
+	Core_Key_State[ RETROK_XFX ] = 0;
+
+	if( input_state_cb( 0, RETRO_DEVICE_JOYPAD,0, RETRO_DEVICE_ID_JOYPAD_L2 ) )
+	{
+		//Joypad Key for Menu
+
+		Core_Key_State[ RETROK_F12 ] = 0x80;	// [F12]を押したことにしておく
+	}
+
+	if( Config.joy1_select_mapping )
+	{
+		if( input_state_cb( 0, RETRO_DEVICE_JOYPAD,0, RETRO_DEVICE_ID_JOYPAD_SELECT ) )
+		{
+			//Joypad Key for Mapping
+			Core_Key_State[ RETROK_XFX ] = 0x80;
 		}
-   		else if(mbL==1 && !mouse_l)
-   		{
-   			mbL=0;
-			Mouse_Event(1,0,0);
-		}
-  	        if(mbR==0 && mouse_r){
-      			mbR=1;
-			Mouse_Event(2,1.0,0);
-		}
-   		else if(mbR==1 && !mouse_r)
-   		{
-   			mbR=0;
-			Mouse_Event(2,0,0);
-		}
+	}
 
-  		int i;
+	if( memcmp( Core_Key_State, Core_old_Key_State, sizeof( Core_Key_State ) ) )
+	{
+		handle_retrok();
+	}
 
-   		for(i=0;i<320;i++)
-      			Core_Key_State[i]=input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0,i) ? 0x80: 0;
+	memcpy( Core_old_Key_State, Core_Key_State, sizeof( Core_Key_State ) );
 
-      	Core_Key_State[RETROK_XFX] = 0;
+	if( menu_mode != menu_out )
+	{
+		int ret;
 
-   		if (input_state_cb(0, RETRO_DEVICE_JOYPAD,0, RETRO_DEVICE_ID_JOYPAD_L2))	//Joypad Key for Menu
-				Core_Key_State[RETROK_F12] = 0x80;
+		keyb_in = 0;
 
-		if (Config.joy1_select_mapping)
-			if (input_state_cb(0, RETRO_DEVICE_JOYPAD,0, RETRO_DEVICE_ID_JOYPAD_SELECT))	//Joypad Key for Mapping
-				Core_Key_State[RETROK_XFX] = 0x80;
-
-		if(memcmp( Core_Key_State,Core_old_Key_State , sizeof(Core_Key_State) ) )
-			handle_retrok();
-
-   		memcpy(Core_old_Key_State,Core_Key_State , sizeof(Core_Key_State) );
-
-		if (menu_mode != menu_out) {
-			int ret;
-
-			keyb_in = 0;
-			if (Core_Key_State[RETROK_RIGHT] || Core_Key_State[RETROK_PAGEDOWN])
-				keyb_in |= JOY_RIGHT;
-			if (Core_Key_State[RETROK_LEFT] || Core_Key_State[RETROK_PAGEUP])
-				keyb_in |= JOY_LEFT;
-			if (Core_Key_State[RETROK_UP])
-				keyb_in |= JOY_UP;
-			if (Core_Key_State[RETROK_DOWN])
-				keyb_in |= JOY_DOWN;
-			if (Core_Key_State[RETROK_z] || Core_Key_State[RETROK_RETURN])
-				keyb_in |= JOY_TRG1;
-			if (Core_Key_State[RETROK_x] || Core_Key_State[RETROK_BACKSPACE])
-				keyb_in |= JOY_TRG2;
-
-			Joystick_Update(TRUE, menu_key_down, 0);
-
-			ret = WinUI_Menu(menu_mode == menu_enter);
-			menu_mode = menu_in;
-			if (ret == WUM_MENU_END) {
-				DSound_Play();
-				menu_mode = menu_out;
-			} else if (ret == WUM_EMU_QUIT) {
-				 end_loop=1;
-			}
+		if( Core_Key_State[ RETROK_RIGHT ] || Core_Key_State[ RETROK_PAGEDOWN ] )
+		{
+			keyb_in |= JOY_RIGHT;
 		}
 
-	//}
+		if( Core_Key_State[ RETROK_LEFT ] || Core_Key_State[ RETROK_PAGEUP ] )
+		{
+			keyb_in |= JOY_LEFT;
+		}
+
+		if( Core_Key_State[ RETROK_UP ] )
+		{
+			keyb_in |= JOY_UP;
+		}
+
+		if( Core_Key_State[ RETROK_DOWN ] )
+		{
+			keyb_in |= JOY_DOWN;
+		}
+
+		if( Core_Key_State[ RETROK_z ] || Core_Key_State[ RETROK_RETURN ] )
+		{
+			keyb_in |= JOY_TRG1;
+		}
+
+		if( Core_Key_State[ RETROK_x ] || Core_Key_State[ RETROK_BACKSPACE ] )
+		{
+			keyb_in |= JOY_TRG2;
+		}
+
+		Joystick_Update( TRUE, menu_key_down, 0 );
+
+		ret = WinUI_Menu( menu_mode == menu_enter );
+
+		menu_mode = menu_in;
+
+		if( ret == WUM_MENU_END )
+		{
+			DSound_Play();
+
+			menu_mode = menu_out;
+		}
+		else if( ret == WUM_EMU_QUIT )
+		{
+			 end_loop=1;
+		}
+	}
 }
 
-extern "C" void end_loop_retro(void)
+//*********************************************
+//
+// void end_loop_retro( void )
+//
+// X68Kのエミュレータとしての後始末をする
+//
+//*********************************************
+extern "C" void end_loop_retro( void )
 {
-   //end_loop:
-   Memory_WriteB(0xe8e00d, 0x31);                     // SRAM write permission
-   Memory_WriteD(0xed0040, Memory_ReadD(0xed0040)+1); // Estimated operation time(min.)
-   Memory_WriteD(0xed0044, Memory_ReadD(0xed0044)+1); // Estimated booting times
+	Memory_WriteB( 0xe8e00d, 0x31 );							// SRAM write permission
+	Memory_WriteD( 0xed0040, Memory_ReadD( 0xed0040 ) + 1 );	// Estimated operation time(min.)
+	Memory_WriteD( 0xed0044, Memory_ReadD( 0xed0044 ) + 1 );	// Estimated booting times
 
-   OPM_Cleanup();
+	OPM_Cleanup();
+
 #ifndef	NO_MERCURY
-   Mcry_Cleanup();
+	Mcry_Cleanup();
 #endif
 
-   Joystick_Cleanup();
-   SRAM_Cleanup();
-   FDD_Cleanup();
-   //CDROM_Cleanup();
-   MIDI_Cleanup();
-   DSound_Cleanup();
-   WinX68k_Cleanup();
-   WinDraw_Cleanup();
-   WinDraw_CleanupScreen();
+	Joystick_Cleanup();
+	SRAM_Cleanup();
+	FDD_Cleanup();
+	//CDROM_Cleanup();
+	MIDI_Cleanup();
+	DSound_Cleanup();
+	WinX68k_Cleanup();
+	WinDraw_Cleanup();
+	WinDraw_CleanupScreen();
 
-   SaveConfig();
+	SaveConfig();
 }
 

@@ -61,7 +61,8 @@ SOURCES_C 		+= \
 				$(CORE_DIR)/win32api/dosio.c \
 				$(CORE_DIR)/win32api/fake.c \
 				$(CORE_DIR)/win32api/peace.c \
-				$(CORE_DIR)/libretro.c
+				$(CORE_DIR)/libretro.c \
+				$(CORE_DIR)/raspberrypi/sjistbl.c
 
 SOURCES_CXX 	+= \
 				$(CORE_DIR)/fmgen/file.cpp \

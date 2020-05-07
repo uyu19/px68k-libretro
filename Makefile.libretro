@@ -49,8 +49,8 @@ CORE_DIR := .
 
 # Unix
 ifneq (,$(findstring unix,$(platform)))
-	CFLAGS += -g -O2
-	CXXFLAGS += -g -O2  -fno-merge-constants
+	CFLAGS += -g -O0
+	CXXFLAGS += -g -O0  -fno-merge-constants
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
@@ -134,14 +134,7 @@ else ifneq (,$(findstring crosspi,$(platform)))
 	fpic := -fPIC
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
 	FLAGS += -D__LINUX__ -DARM -marm
-else ifeq ($(platform), vita)
-	TARGET := $(TARGET_NAME)_libretro_vita.a
-	CC = arm-vita-eabi-gcc
-	CXX = arm-vita-eabi-g++
-	AR = arm-vita-eabi-ar
-	FLAGS += -DVITA=1
-	CXXFLAGS += -Wl,-q -Wall -O2
-	STATIC_LINKING = 1
+
 # Nintendo Switch (libnx)
 else ifeq ($(platform), libnx)
 	include $(DEVKITPRO)/libnx/switch_rules
@@ -319,15 +312,7 @@ else ifneq (,$(findstring armv,$(platform)))
 		ASFLAGS += -mfloat-abi=hard
 	endif
 	CFLAGS += -DARM
-# QNX
-else ifeq ($(platform), qnx)
-	EXT?=so
-	TARGET := $(TARGET_NAME)_libretro_$(platform).$(EXT)
-	fpic := -fPIC
-	SHARED := -shared -Wl,--no-undefined
-	CC = qcc -Vgcc_ntoarmv7le
-	CXX = QCC -Vgcc_ntoarmv7le
-	LDFLAGS += -lm
+
 # Windows
 else
 	TARGET :=  $(TARGET_NAME)_libretro.dll
