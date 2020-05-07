@@ -1,3 +1,7 @@
+
+raspberrypi用に色々書き換えてみるテスト
+
+---------------------------------------------------------------------------------------
 px68k-libretro 
 
 forked from https://github.com/hissorii/px68k
