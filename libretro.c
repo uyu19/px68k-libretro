@@ -290,7 +290,7 @@ void attach_disk_swap_interface_ext(void)
    dskcb_ext.get_num_images  = get_num_images;
    dskcb_ext.add_image_index = add_image_index;
    dskcb_ext.replace_image_index = replace_image_index;
-   dskcb_ext.set_initial_image = disk_set_initial_image;
+   dskcb_ext.set_initial_image = NULL;
    dskcb_ext.get_image_path = disk_get_image_path;
    dskcb_ext.get_image_label = disk_get_image_label;
 
