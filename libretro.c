@@ -165,9 +165,9 @@ static void update_variable_disk_drive_swap(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "FDD0") == 0)
-         disk.drive = FDD0;
+         disk.cur_drive = FDD0;
       else
-         disk.drive = FDD1;
+         disk.cur_drive = FDD1;
    }
 }
 
