@@ -73,17 +73,24 @@ static unsigned no_content;
 
 static int opt_rumble_enabled = 1;
 
+#define MAX_DISKS 10
+
+typedef enum {
+   FDD0 = 0,
+   FDD1 = 1
+} disk_drive;
+
 /* .dsk swap support */
 struct disk_control_interface_t
 {
-   unsigned dci_version;  /* disk control interface version, 0 = use old interface */
-   unsigned total_images; /* total number if disk images */
-   unsigned index;        /* currect disk index */
-   unsigned drive;        /* current active drive */
-   bool inserted[2];      /* tray state for FDD0/FDD1, 0 = disk ejected, 1 = disk inserted */
+   unsigned dci_version;                        /* disk control interface version, 0 = use old interface */
+   unsigned total_images;                       /* total number if disk images */
+   unsigned index;                              /* currect disk index */
+   disk_drive cur_drive;                          /* current active drive */
+   bool inserted[2];                            /* tray state for FDD0/FDD1, 0 = disk ejected, 1 = disk inserted */
 
-   unsigned char path[10][MAX_PATH];   /* disk image paths */
-   unsigned char label[10][MAX_PATH];  /* disk image base name w/o extension */
+   unsigned char path[MAX_DISKS][MAX_PATH];     /* disk image paths */
+   unsigned char label[MAX_DISKS][MAX_PATH];    /* disk image base name w/o extension */
 
    unsigned g_initial_disc;                     /* initial disk index */
    unsigned char g_initial_disc_path[MAX_PATH]; /* initial disk path */
@@ -147,7 +154,7 @@ static void extract_directory(char *buf, const char *path, size_t size)
       buf[0] = '\0';
 }
 
-static void update_disk_drive_swap(void)
+static void update_variable_disk_drive_swap(void)
 {
    struct retro_variable var =
    {
@@ -158,38 +165,35 @@ static void update_disk_drive_swap(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "FDD0") == 0)
-         disk.drive = 0;
+         disk.drive = FDD0;
       else
-         disk.drive = 1;
+         disk.drive = FDD1;
    }
 }
 
 static bool set_eject_state(bool ejected)
 {
-   if(disk.index == disk.total_images)
-   {
-      //retroarch is trying to set "no disk in tray"
-      return true;
-   }
+   if (disk.index == disk.total_images)
+      return true; //retroarch is trying to set "no disk in tray"
 
    if (ejected)
    {
-      FDD_EjectFD(disk.drive);
-      Config.FDDImage[disk.drive][0] = '\0';
+      FDD_EjectFD(disk.cur_drive);
+      Config.FDDImage[disk.cur_drive][0] = '\0';
    }
    else
    {
-      strcpy(Config.FDDImage[disk.drive], disk.path[disk.index]);
-      FDD_SetFD(disk.drive, Config.FDDImage[disk.drive], 0);
+      strcpy(Config.FDDImage[disk.cur_drive], disk.path[disk.index]);
+      FDD_SetFD(disk.cur_drive, Config.FDDImage[disk.cur_drive], 0);
    }
-   disk.inserted[disk.drive] = !ejected;
+   disk.inserted[disk.cur_drive] = !ejected;
    return true;
 }
 
 static bool get_eject_state(void)
 {
-   update_disk_drive_swap();
-   return !disk.inserted[disk.drive];
+   update_variable_disk_drive_swap();
+   return !disk.inserted[disk.cur_drive];
 }
 
 static unsigned get_image_index(void)
@@ -210,7 +214,7 @@ static unsigned get_num_images(void)
 
 static bool add_image_index(void)
 {
-   if (disk.total_images >= 10)
+   if (disk.total_images >= MAX_DISKS)
       return false;
 
    disk.total_images++;
@@ -306,14 +310,14 @@ static void disk_swap_interface_init(void)
    disk.dci_version  = 0;
    disk.total_images = 0;
    disk.index        = 0;
-   disk.drive        = 1;
+   disk.cur_drive    = FDD1;
    disk.inserted[0]  = false;
    disk.inserted[1]  = false;
 
    disk.g_initial_disc         = 0;
    disk.g_initial_disc_path[0] = '\0';
 
-   for (i = 0; i < 10; i++)
+   for (i = 0; i < MAX_DISKS; i++)
    {
       disk.path[i][0]  = '\0';
       disk.label[i][0] = '\0';
@@ -898,7 +902,7 @@ static void update_variables(void)
    }
 #endif
 
-   update_disk_drive_swap();
+   update_variable_disk_drive_swap();
 
    var.key = "px68k_menufontsize";
    var.value = NULL;
