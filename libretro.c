@@ -68,19 +68,29 @@ uint16_t *videoBuffer;
 static retro_video_refresh_t video_cb;
 static retro_environment_t environ_cb;
 static retro_input_poll_t input_poll_cb;
+static retro_set_rumble_state_t rumble_cb;
 static unsigned no_content;
+
+static int opt_rumble_enabled = 1;
+
+#define MAX_DISKS 10
+
+typedef enum {
+   FDD0 = 0,
+   FDD1 = 1
+} disk_drive;
 
 /* .dsk swap support */
 struct disk_control_interface_t
 {
-   unsigned dci_version;  /* disk control interface version, 0 = use old interface */
-   unsigned total_images; /* total number if disk images */
-   unsigned index;        /* currect disk index */
-   unsigned drive;        /* current active drive */
-   bool inserted[2];      /* tray state for FDD0/FDD1, 0 = disk ejected, 1 = disk inserted */
+   unsigned dci_version;                        /* disk control interface version, 0 = use old interface */
+   unsigned total_images;                       /* total number if disk images */
+   unsigned index;                              /* currect disk index */
+   disk_drive cur_drive;                          /* current active drive */
+   bool inserted[2];                            /* tray state for FDD0/FDD1, 0 = disk ejected, 1 = disk inserted */
 
-   unsigned char path[10][MAX_PATH];   /* disk image paths */
-   unsigned char label[10][MAX_PATH];  /* disk image base name w/o extension */
+   unsigned char path[MAX_DISKS][MAX_PATH];     /* disk image paths */
+   unsigned char label[MAX_DISKS][MAX_PATH];    /* disk image base name w/o extension */
 
    unsigned g_initial_disc;                     /* initial disk index */
    unsigned char g_initial_disc_path[MAX_PATH]; /* initial disk path */
@@ -144,7 +154,7 @@ static void extract_directory(char *buf, const char *path, size_t size)
       buf[0] = '\0';
 }
 
-static void update_disk_drive_swap(void)
+static void update_variable_disk_drive_swap(void)
 {
    struct retro_variable var =
    {
@@ -155,38 +165,35 @@ static void update_disk_drive_swap(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "FDD0") == 0)
-         disk.drive = 0;
+         disk.cur_drive = FDD0;
       else
-         disk.drive = 1;
+         disk.cur_drive = FDD1;
    }
 }
 
 static bool set_eject_state(bool ejected)
 {
-   if(disk.index == disk.total_images)
-   {
-      //retroarch is trying to set "no disk in tray"
-      return true;
-   }
+   if (disk.index == disk.total_images)
+      return true; //retroarch is trying to set "no disk in tray"
 
    if (ejected)
    {
-      FDD_EjectFD(disk.drive);
-      Config.FDDImage[disk.drive][0] = '\0';
+      FDD_EjectFD(disk.cur_drive);
+      Config.FDDImage[disk.cur_drive][0] = '\0';
    }
    else
    {
-      strcpy(Config.FDDImage[disk.drive], disk.path[disk.index]);
-      FDD_SetFD(disk.drive, Config.FDDImage[disk.drive], 0);
+      strcpy(Config.FDDImage[disk.cur_drive], disk.path[disk.index]);
+      FDD_SetFD(disk.cur_drive, Config.FDDImage[disk.cur_drive], 0);
    }
-   disk.inserted[disk.drive] = !ejected;
+   disk.inserted[disk.cur_drive] = !ejected;
    return true;
 }
 
 static bool get_eject_state(void)
 {
-   update_disk_drive_swap();
-   return !disk.inserted[disk.drive];
+   update_variable_disk_drive_swap();
+   return !disk.inserted[disk.cur_drive];
 }
 
 static unsigned get_image_index(void)
@@ -207,7 +214,7 @@ static unsigned get_num_images(void)
 
 static bool add_image_index(void)
 {
-   if (disk.total_images >= 10)
+   if (disk.total_images >= MAX_DISKS)
       return false;
 
    disk.total_images++;
@@ -290,7 +297,7 @@ void attach_disk_swap_interface_ext(void)
    dskcb_ext.get_num_images  = get_num_images;
    dskcb_ext.add_image_index = add_image_index;
    dskcb_ext.replace_image_index = replace_image_index;
-   dskcb_ext.set_initial_image = disk_set_initial_image;
+   dskcb_ext.set_initial_image = NULL;
    dskcb_ext.get_image_path = disk_get_image_path;
    dskcb_ext.get_image_label = disk_get_image_label;
 
@@ -303,14 +310,14 @@ static void disk_swap_interface_init(void)
    disk.dci_version  = 0;
    disk.total_images = 0;
    disk.index        = 0;
-   disk.drive        = 1;
+   disk.cur_drive    = FDD1;
    disk.inserted[0]  = false;
    disk.inserted[1]  = false;
 
    disk.g_initial_disc         = 0;
    disk.g_initial_disc_path[0] = '\0';
 
-   for (i = 0; i < 10; i++)
+   for (i = 0; i < MAX_DISKS; i++)
    {
       disk.path[i][0]  = '\0';
       disk.label[i][0] = '\0';
@@ -895,7 +902,7 @@ static void update_variables(void)
    }
 #endif
 
-   update_disk_drive_swap();
+   update_variable_disk_drive_swap();
 
    var.key = "px68k_menufontsize";
    var.value = NULL;
@@ -944,6 +951,17 @@ static void update_variables(void)
          Config.disk_path = 0;
       if (!strcmp(var.value, "enabled"))
          Config.disk_path = 1;
+   }
+
+   var.key = "px68k_rumble_on_disk_read";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled"))
+         opt_rumble_enabled = 0;
+      if (!strcmp(var.value, "enabled"))
+         opt_rumble_enabled = 1;
    }
 
    /* PX68K Menu */
@@ -1148,6 +1166,7 @@ size_t retro_get_memory_size(unsigned id)
 void retro_init(void)
 {
    struct retro_log_callback log;
+   struct retro_rumble_interface rumble;
    const char *system_dir = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
@@ -1195,6 +1214,9 @@ void retro_init(void)
       exit(0);
    }
 
+   if (environ_cb(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &rumble) && rumble.set_rumble_state)
+      rumble_cb = rumble.set_rumble_state;
+
    libretro_supports_input_bitmasks = 0;
    if (environ_cb(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
       libretro_supports_input_bitmasks = 1;
@@ -1231,6 +1253,30 @@ void retro_reset(void)
 }
 
 static int firstcall = 1;
+
+static void rumbleFrames(void)
+{
+   static int last_read_state;
+
+   if (!rumble_cb)
+      return;
+
+   if (last_read_state != FDD_IsReading)
+   {
+      if (opt_rumble_enabled && FDD_IsReading)
+      {
+         rumble_cb(0, RETRO_RUMBLE_STRONG, 0x8000);
+         rumble_cb(0, RETRO_RUMBLE_WEAK, 0x800);
+      }
+      else
+      {
+         rumble_cb(0, RETRO_RUMBLE_STRONG, 0);
+         rumble_cb(0, RETRO_RUMBLE_WEAK, 0);
+      }
+   }
+
+   last_read_state = FDD_IsReading;
+}
 
 void retro_run(void)
 {
@@ -1270,6 +1316,10 @@ void retro_run(void)
    }
 
    input_poll_cb();
+
+   rumbleFrames();
+
+   FDD_IsReading = 0;
 
    exec_app_retro();
 

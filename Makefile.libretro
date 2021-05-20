@@ -12,16 +12,23 @@ unixpath = $(subst \,/,$1)
 unixcygpath = /$(subst :,,$(call unixpath,$1))
 
 ifeq ($(platform),)
-platform = unix
-ifeq ($(shell uname -a),)
-   platform = win
-else ifneq ($(findstring MINGW,$(shell uname -a)),)
-   platform = win
-else ifneq ($(findstring Darwin,$(shell uname -a)),)
-   platform = osx
-else ifneq ($(findstring win,$(shell uname -a)),)
-   platform = win
-endif
+	platform = unix
+	ifeq ($(shell uname -s),)
+		platform = win
+	else ifneq ($(findstring MINGW,$(shell uname -s)),)
+		platform = win
+	else ifneq ($(findstring Darwin,$(shell uname -s)),)
+		platform = osx
+		arch = intel
+	ifeq ($(shell uname -p),arm64)
+		arch = arm
+	endif
+	ifeq ($(shell uname -p),powerpc)
+		arch = ppc
+	endif
+	else ifneq ($(findstring win,$(shell uname -s)),)
+		platform = win
+	endif
 endif
 
 # system platform
@@ -32,9 +39,12 @@ ifeq ($(shell uname -a),)
 else ifneq ($(findstring Darwin,$(shell uname -a)),)
 	system_platform = osx
 	arch = intel
-ifeq ($(shell uname -p),powerpc)
-	arch = ppc
-endif
+	ifeq ($(shell uname -p),arm64)
+		arch = arm
+	endif
+	ifeq ($(shell uname -p),powerpc)
+		arch = ppc
+	endif
 else ifneq ($(findstring MINGW,$(shell uname -a)),)
 	system_platform = win
 endif
@@ -71,11 +81,19 @@ else ifeq ($(platform), osx)
    	CXXFLAGS += -stdlib=libc++
    	LDFLAGS += -stdlib=libc++
 
+   ifeq ($(CROSS_COMPILE),1)
+		TARGET_RULE   = -target $(LIBRETRO_APPLE_PLATFORM) -isysroot $(LIBRETRO_APPLE_ISYSROOT)
+		CFLAGS   += $(TARGET_RULE)
+		CXXFLAGS += $(TARGET_RULE)
+		LDFLAGS  += $(TARGET_RULE)
+   endif
+
 # iOS
 else ifneq (,$(findstring ios,$(platform)))
 	TARGET := $(TARGET_NAME)_libretro_ios.dylib
 	fpic = -fPIC
 	SHARED := -dynamiclib
+        MINVERSION :=
 
 	ifeq ($(IOSSDK),)
    		IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
@@ -92,24 +110,27 @@ else ifneq (,$(findstring ios,$(platform)))
 	endif
 
 	ifeq ($(platform),$(filter $(platform),ios9 ios-arm64))
-		CC += -miphoneos-version-min=8.0
-		CXXFLAGS += -miphoneos-version-min=8.0
+           MINVERSION = -miphoneos-version-min=8.0
 	else
-		CC += -miphoneos-version-min=5.0
-		CXXFLAGS += -miphoneos-version-min=5.0
+           MINVERSION = -miphoneos-version-min=5.0
 	endif
+	CFLAGS += $(MINVERSION)
+	CXXFLAGS += $(MINVERSION)
 
 # tvOS
 else ifeq ($(platform), tvos-arm64)
-	TARGET := $(TARGET_NAME)_libretro_tvos.dylib
-	fpic = -fPIC
-	SHARED := -dynamiclib
+   TARGET := $(TARGET_NAME)_libretro_tvos.dylib
+   fpic    = -fPIC
+   SHARED := -dynamiclib
 
-	ifeq ($(IOSSDK),)
-   		IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
-	endif
+ifeq ($(IOSSDK),)
+   IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
+endif
 
-	DEFINES := -DIOS
+   DEFINES := -DIOS
+
+   CC = cc -arch arm64 -isysroot $(IOSSDK)
+   CXX = c++ -arch arm64 -isysroot $(IOSSDK)
 
 # android arm
 else ifneq (,$(findstring android,$(platform)))
@@ -176,6 +197,23 @@ else ifeq ($(platform), classic_armv7_a7)
 	    LDFLAGS += -static-libgcc -static-libstdc++
 	  endif
 	endif
+#######################################
+
+# (armv8 a35, hard point, neon based) ###
+# PlayStation Classic 
+else ifeq ($(platform), classic_armv8_a35)
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
+	CFLAGS += -Ofast \
+	-fuse-linker-plugin \
+	-fno-stack-protector -fno-ident -fomit-frame-pointer \
+	-fmerge-all-constants -ffast-math -funroll-all-loops \
+	-marm -mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard
+	HAVE_NEON = 1
+	ARCH = arm
+	FLAGS += -D__LINUX__ -DARM -marm
+	LDFLAGS += -marm -mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard -Ofast -flto -fuse-linker-plugin
 #######################################
 
 # cross Windows
@@ -354,7 +392,7 @@ ifeq ($(DEBUG), 1)
 else ifneq (,$(findstring msvc,$(platform)))
    FLAGS += -O2
 else
-   FLAGS += -O3 -ffast-math -fomit-frame-pointer
+   FLAGS += -O2 -ffast-math -fomit-frame-pointer
 endif
 
 LDFLAGS +=  $(fpic) $(SHARED) $(EXTRA_LDF)
